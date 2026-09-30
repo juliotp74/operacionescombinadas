@@ -17,7 +17,7 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Canvas Confetti for Interactive Mode rewards -->
+  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -27,23 +27,6 @@
       font-family: 'Inter', sans-serif;
       background-color: #f8fafc;
       color: #0f172a;
-    }
-
-    /* Native CSS Fraction Styling for crisp fallbacks */
-    .frac {
-      display: inline-flex;
-      flex-direction: column;
-      vertical-align: middle;
-      text-align: center;
-      padding: 0 0.25rem;
-      font-size: 0.95em;
-    }
-    .frac .num {
-      border-bottom: 1.5px solid currentColor;
-      padding-bottom: 1px;
-    }
-    .frac .den {
-      padding-top: 1px;
     }
 
     /* Print-specific CSS styles */
@@ -96,7 +79,6 @@
       }
     }
 
-    /* Standard screen styles */
     .worksheet-paper {
       background: #ffffff;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
@@ -107,9 +89,9 @@
       overflow-x: auto;
       overflow-y: hidden;
       padding: 4px 0;
+      margin: 0;
     }
 
-    /* Custom scrollbar */
     ::-webkit-scrollbar {
       height: 6px;
       width: 6px;
@@ -129,14 +111,17 @@
   <header class="no-print bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="bg-indigo-600 text-white p-2.5 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-indigo-600/30">
-          <i class="fa-solid font-mono text-xl">&#189;</i>
+        <!-- Clean SVG Fraction Icon -->
+        <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-indigo-600/30 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 10h6m-7-5h8"></path>
+          </svg>
         </div>
         <div>
-          <h1 class="font-bold text-lg sm:text-xl leading-tight text-slate-100 flex items-center gap-2">
-            MathFrac <span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-0.5 rounded-md font-semibold border border-indigo-500/30">v2.0 Interactivo</span>
+          <h1 class="font-bold text-base sm:text-lg leading-tight text-slate-100 flex items-center gap-2">
+            Fichas de Operaciones Combinadas
           </h1>
-          <p class="text-xs text-slate-400 hidden sm:block">Operaciones combinadas con fracciones y jerarquía de operaciones</p>
+          <p class="text-xs text-slate-400 hidden sm:block">Fracciones, Números Enteros, Paréntesis, Corchetes y Jerarquía</p>
         </div>
       </div>
 
@@ -155,7 +140,7 @@
   <!-- Main Application Wrapper -->
   <div class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
 
-    <!-- Sidebar Controls Panel (no-print) -->
+    <!-- Sidebar Controls Panel -->
     <aside class="no-print lg:w-80 flex-shrink-0 flex flex-col gap-5">
       
       <!-- Source Generator Selector -->
@@ -169,15 +154,15 @@
             <i class="fa-solid fa-file-pdf text-red-500 text-xl mt-0.5"></i>
             <div>
               <div class="font-semibold text-slate-800 text-sm group-hover:text-indigo-700">Ficha PDF Original</div>
-              <p class="text-xs text-slate-500">16 ejercicios exactos (a-p) del documento PDF de muestra</p>
+              <p class="text-xs text-slate-500">16 ejercicios exactos (a-p) del documento original</p>
             </div>
           </button>
 
           <button id="btn-load-random" onclick="generateRandomSet()" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-start gap-3 group">
             <i class="fa-solid fa-dice text-emerald-500 text-xl mt-0.5"></i>
             <div>
-              <div class="font-semibold text-slate-800 text-sm group-hover:text-emerald-700">Generador Infinito</div>
-              <p class="text-xs text-slate-500">Genera nuevos ejercicios con solucionario detallado</p>
+              <div class="font-semibold text-slate-800 text-sm group-hover:text-emerald-700">Generador Variado</div>
+              <p class="text-xs text-slate-500">Operaciones dinámicas con enteros, paréntesis y potencias</p>
             </div>
           </button>
         </div>
@@ -202,11 +187,12 @@
           </div>
 
           <div>
-            <label for="difficulty-level" class="block font-medium text-slate-700 mb-1">Nivel de Dificultad</label>
+            <label for="difficulty-level" class="block font-medium text-slate-700 mb-1">Estructura y Dificultad</label>
             <select id="difficulty-level" onchange="onSettingsChanged()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-              <option value="easy">🟢 Básico (Sin paréntesis o simples)</option>
-              <option value="medium">🟡 Intermedio (Paréntesis y jerarquía)</option>
-              <option value="advanced" selected>🔴 Avanzado (Corchetes [...] anidados)</option>
+              <option value="easy">🟢 Básico (Fracciones y Enteros simples)</option>
+              <option value="medium">🟡 Intermedio (Jerarquía con Paréntesis)</option>
+              <option value="advanced" selected>🔴 Avanzado (Corchetes [...] y Enteros)</option>
+              <option value="expert">🟣 Experto (Corchetes + Potencias + Dos Cifras)</option>
             </select>
           </div>
         </div>
@@ -219,13 +205,11 @@
         </h2>
 
         <div class="space-y-3 text-sm">
-          <!-- Toggle Solutions -->
           <label class="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200">
             <span class="font-medium text-slate-700">Mostrar Solución <code class="text-xs text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">(Soluc: a/b)</code></span>
             <input type="checkbox" id="toggle-solutions-cb" onchange="toggleSolutions(this.checked)" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
           </label>
 
-          <!-- Columns Toggle -->
           <div>
             <label class="block font-medium text-slate-700 mb-1">Columnas en Ficha</label>
             <div class="grid grid-cols-2 gap-2">
@@ -234,7 +218,6 @@
             </div>
           </div>
 
-          <!-- Header Inputs -->
           <div class="pt-3 border-t border-slate-100 space-y-2">
             <label class="block font-medium text-slate-700 text-xs">Título del Documento</label>
             <input type="text" id="doc-title-input" value="Operaciones combinadas con fracciones" oninput="updateHeaderDetails()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-800">
@@ -264,14 +247,12 @@
       <section id="worksheet-view" class="worksheet-paper rounded-2xl p-6 sm:p-10 transition-all min-h-[800px] flex flex-col justify-between">
         
         <div>
-          <!-- Header for Printed Document -->
           <header class="border-b-2 border-slate-800 pb-4 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
               <h1 id="header-doc-title" class="text-2xl font-bold text-slate-900 tracking-tight">Operaciones combinadas con fracciones</h1>
               <span id="header-doc-course" class="text-xs font-semibold bg-slate-100 border border-slate-300 text-slate-700 px-2.5 py-1 rounded-md self-start sm:self-auto">Matemáticas 1º-4º ESO</span>
             </div>
 
-            <!-- Student Fields line -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-slate-700 pt-2 border-t border-dashed border-slate-300">
               <div><span class="font-semibold">Alumno/a:</span> __________________________</div>
               <div><span class="font-semibold">Fecha:</span> ______________</div>
@@ -279,35 +260,30 @@
             </div>
           </header>
 
-          <!-- Instructions -->
           <div class="mb-6 bg-slate-50 border-l-4 border-indigo-600 p-3.5 rounded-r-xl text-sm text-slate-700 no-print flex items-start gap-3">
             <i class="fa-solid fa-circle-info text-indigo-600 text-lg mt-0.5"></i>
             <div>
               <p class="font-semibold text-slate-900">Instrucciones:</p>
-              <p class="text-xs text-slate-600 mt-0.5">Efectuar las siguientes operaciones combinadas, simplificando siempre en todos los pasos y respetando la jerarquía de operaciones. Haz clic en el botón <span class="inline-flex items-center gap-1 font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"><i class="fa-solid fa-lightbulb"></i> Paso a Paso</span> de cualquier ejercicio para ver su desglose interactivo completo.</p>
+              <p class="text-xs text-slate-600 mt-0.5">Efectuar las siguientes operaciones combinadas con fracciones y números enteros. Respeta la jerarquía de operaciones y simplifica el resultado final.</p>
             </div>
           </div>
           
-          <p class="print-only text-sm font-semibold mb-4 hidden">1. Efectuar las siguientes operaciones combinadas, simplificando siempre en todos los pasos, y respetando la jerarquía:</p>
+          <p class="print-only text-sm font-semibold mb-4 hidden">1. Efectuar las siguientes operaciones combinadas, simplificando siempre en todos los pasos y respetando la jerarquía:</p>
 
-          <!-- Exercises List Container -->
           <div id="exercises-container" class="exercise-grid-2 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-            <!-- Dynamic Exercises Rendered Here -->
+            <!-- Exercises rendered here -->
           </div>
         </div>
 
-        <!-- Footer for Worksheet -->
-	<footer class="mt-12 pt-4 border-t border-slate-200 text-xs text-slate-400 flex justify-between items-center">
- 	 <span>Creado por <strong>[Julio T. P.]</strong> · MathFrac Web App</span>
-         <span>Página <span class="print-page-num">1</span></span>
+        <footer class="mt-12 pt-4 border-t border-slate-200 text-xs text-slate-400 flex justify-between items-center">
+          <span>Creado por <strong>[Julio T. P.]</strong> · Generador de Operaciones Combinadas</span>
+          <span>Página <span class="print-page-num">1</span></span>
         </footer>
 
       </section>
 
       <!-- VIEW 2: INTERACTIVE SELF-ASSESSMENT MODE -->
       <section id="interactive-view" class="hidden flex-col gap-6">
-        
-        <!-- Score Bar & Progress Header -->
         <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h2 class="text-xl font-bold text-slate-800">Modo Práctica Interactivo</h2>
@@ -326,11 +302,9 @@
           </div>
         </div>
 
-        <!-- Interactive Cards Container -->
         <div id="interactive-cards-container" class="space-y-4">
-          <!-- Dynamic Interactive Cards Rendered Here -->
+          <!-- Interactive cards rendered here -->
         </div>
-
       </section>
 
     </main>
@@ -341,7 +315,6 @@
   <div id="step-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all">
     <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden transform transition-all scale-100">
       
-      <!-- Modal Header -->
       <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 font-bold">
@@ -357,12 +330,10 @@
         </button>
       </div>
       
-      <!-- Modal Content Body -->
       <div id="step-modal-content" class="p-6 overflow-y-auto space-y-5 text-slate-800 bg-slate-50/50">
         <!-- Content inserted dynamically -->
       </div>
 
-      <!-- Modal Footer -->
       <div class="p-4 bg-white border-t border-slate-200 flex justify-between items-center">
         <span class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-shield-halved text-emerald-500 mr-1"></i> Resultado verificado matemáticamente</span>
         <button onclick="closeStepModal()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all">
@@ -372,12 +343,10 @@
     </div>
   </div>
 
-  <!-- Toast Notification System -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- JavaScript Application Logic -->
   <script>
-    /* Fraction Class for exact symbolic arithmetic & simplification */
     class Fraction {
       constructor(n, d = 1) {
         if (d === 0) throw new Error("Denominator cannot be 0");
@@ -422,15 +391,23 @@
       }
     }
 
-    // Helper to safely format KaTeX strings into HTML
-    function renderTexToString(texStr, displayMode = false) {
+    function safeRenderTex(containerElement, rawTex, isDisplay = false) {
+      if (!containerElement) return;
+      containerElement.innerHTML = '';
       try {
-        return katex.renderToString(texStr, { displayMode, throwOnError: false });
+        let cleanTex = rawTex.trim();
+        cleanTex = cleanTex.replace(/^\$+|\$+$/g, '');
+        
+        katex.render(cleanTex, containerElement, {
+          displayMode: isDisplay,
+          throwOnError: false
+        });
       } catch (e) {
-        return `<span class="font-mono text-indigo-600">${texStr}</span>`;
+        containerElement.innerText = rawTex;
       }
     }
 
+    // ORIGINAL PDF EXERCISES
     const PRESET_PDF_EXERCISES = [
       {
         id: 'a',
@@ -438,82 +415,30 @@
         solucStr: '13/12',
         targetFrac: new Fraction(13, 12),
         steps: [
-          {
-            title: "1. Resolver el paréntesis interior",
-            desc: "Calculamos la resta dentro del paréntesis hallando el m.c.m.(4, 6) = 12:",
-            math: "\\frac{3}{4} - \\frac{1}{6} = \\frac{9}{12} - \\frac{2}{12} = \\frac{7}{12}"
-          },
-          {
-            title: "2. Operar dentro del corchete",
-            desc: "Sustituimos el resultado anterior y restamos desde el número entero 1:",
-            math: "1 - \\frac{7}{12} = \\frac{12}{12} - \\frac{7}{12} = \\frac{5}{12}"
-          },
-          {
-            title: "3. Suma final exterior",
-            desc: "Sumamos la primera fracción exterior hallando el m.c.m.(3, 12) = 12:",
-            math: "\\frac{2}{3} + \\frac{5}{12} = \\frac{8}{12} + \\frac{5}{12} = \\frac{13}{12}"
-          },
-          {
-            title: "4. Simplificación y m.c.d.",
-            desc: "Comprobamos m.c.d.(13, 12) = 1. La fracción resultante es irreducible.",
-            math: "\\text{Resultado: } \\frac{13}{12}"
-          }
+          { title: "1. Resolver el paréntesis interior", desc: "Calculamos m.c.m.(4, 6) = 12:", math: "\\frac{3}{4} - \\frac{1}{6} = \\frac{9}{12} - \\frac{2}{12} = \\frac{7}{12}" },
+          { title: "2. Operar dentro del corchete", desc: "Restamos desde el número entero 1:", math: "1 - \\frac{7}{12} = \\frac{12}{12} - \\frac{7}{12} = \\frac{5}{12}" },
+          { title: "3. Suma final exterior", desc: "Sumamos con m.c.m.(3, 12) = 12:", math: "\\frac{2}{3} + \\frac{5}{12} = \\frac{8}{12} + \\frac{5}{12} = \\frac{13}{12}" }
         ]
       },
       {
         id: 'b',
-        tex: '\\frac{4}{5}-\\frac{7}{3}\\cdot\\frac{3}{7}+\\frac{1}{5}\\left(2+\\frac{1}{2}\\right)-\\frac{7}{3}+4:\\frac{6}{5}=',
+        tex: '\\frac{4}{5}-\\frac{7}{3}\\cdot\\frac{3}{7}+\\frac{1}{5}\\cdot\\left(2+\\frac{1}{2}\\right)-\\frac{7}{3}+4:\\frac{6}{5}=',
         solucStr: '13/10',
         targetFrac: new Fraction(13, 10),
         steps: [
-          {
-            title: "1. Paréntesis prioritario",
-            desc: "Sumamos el entero y la fracción dentro del paréntesis:",
-            math: "2 + \\frac{1}{2} = \\frac{4}{2} + \\frac{1}{2} = \\frac{5}{2}"
-          },
-          {
-            title: "2. Multiplicaciones y divisiones",
-            desc: "Efectuamos los productos y divisiones de izquierda a derecha:",
-            math: "\\frac{7}{3} \\cdot \\frac{3}{7} = 1, \\quad \\frac{1}{5} \\cdot \\frac{5}{2} = \\frac{1}{2}, \\quad 4 : \\frac{6}{5} = \\frac{20}{6} = \\frac{10}{3}"
-          },
-          {
-            title: "3. Sumas y restas con m.c.m.",
-            desc: "Reemplazamos en la expresión y hallamos el m.c.m.(5, 2, 3) = 30:",
-            math: "\\frac{4}{5} - 1 + \\frac{1}{2} - \\frac{7}{3} + \\frac{10}{3} = \\frac{24 - 30 + 15 - 70 + 100}{30} = \\frac{39}{30}"
-          },
-          {
-            title: "4. Simplificación por m.c.d.",
-            desc: "Simplificamos dividiendo numerador y denominador por m.c.d.(39, 30) = 3:",
-            math: "\\frac{39 : 3}{30 : 3} = \\frac{13}{10}"
-          }
+          { title: "1. Paréntesis prioritario", desc: "Sumamos entero y fracción:", math: "2 + \\frac{1}{2} = \\frac{5}{2}" },
+          { title: "2. Multiplicaciones y divisiones", desc: "Operamos en orden:", math: "\\frac{7}{3} \\cdot \\frac{3}{7} = 1, \\quad \\frac{1}{5} \\cdot \\frac{5}{2} = \\frac{1}{2}, \\quad 4 : \\frac{6}{5} = \\frac{10}{3}" },
+          { title: "3. Sumas y restas con m.c.m. = 30", desc: "Calculamos el resultado:", math: "\\frac{4}{5} - 1 + \\frac{1}{2} - \\frac{7}{3} + \\frac{10}{3} = \\frac{13}{10}" }
         ]
       },
       {
         id: 'c',
-        tex: '\\frac{2}{3}+\\frac{5}{4}\\left(\\frac{3}{5}+\\frac{4}{10}\\right)-\\frac{5}{4}+\\left(\\frac{3}{5}:4\\right)+\\frac{12}{5}=',
+        tex: '\\frac{2}{3}+\\frac{5}{4}\\cdot\\left(\\frac{3}{5}+\\frac{4}{10}\\right)-\\frac{5}{4}+\\left(\\frac{3}{5}:4\\right)+\\frac{12}{5}=',
         solucStr: '193/60',
         targetFrac: new Fraction(193, 60),
         steps: [
-          {
-            title: "1. Resolver ambos paréntesis",
-            desc: "Operamos dentro de cada paréntesis simplificando las fracciones:",
-            math: "\\frac{3}{5} + \\frac{4}{10} = \\frac{3}{5} + \\frac{2}{5} = 1 \\quad \\text{y} \\quad \\frac{3}{5} : 4 = \\frac{3}{20}"
-          },
-          {
-            title: "2. Multiplicación",
-            desc: "Efectuamos la multiplicación de la primera parte:",
-            math: "\\frac{5}{4} \\cdot 1 = \\frac{5}{4}"
-          },
-          {
-            title: "3. Cancelación de términos opuestos",
-            desc: "Observamos que \\(\\frac{5}{4} - \\frac{5}{4} = 0\\), anulándose entre sí:",
-            math: "\\frac{2}{3} + \\frac{3}{20} + \\frac{12}{5}"
-          },
-          {
-            title: "4. Suma final con m.c.m.",
-            desc: "Calculamos el m.c.m.(3, 20, 5) = 60:",
-            math: "\\frac{40 + 9 + 144}{60} = \\frac{193}{60}"
-          }
+          { title: "1. Resolver ambos paréntesis", desc: "Calculamos:", math: "\\frac{3}{5} + \\frac{4}{10} = 1 \\quad \\text{y} \\quad \\frac{3}{5} : 4 = \\frac{3}{20}" },
+          { title: "2. Suma final", desc: "Operamos con m.c.m.(3, 20, 5) = 60:", math: "\\frac{2}{3} + \\frac{3}{20} + \\frac{12}{5} = \\frac{193}{60}" }
         ]
       },
       {
@@ -522,21 +447,8 @@
         solucStr: '112/55',
         targetFrac: new Fraction(112, 55),
         steps: [
-          {
-            title: "1. Resolver el paréntesis",
-            desc: "Agrupamos los tercios e introducimos el m.c.m. dentro del paréntesis:",
-            math: "2 + \\left(\\frac{7}{3} + \\frac{5}{3}\\right) - \\frac{1}{2} = 2 + 4 - \\frac{1}{2} = 6 - \\frac{1}{2} = \\frac{11}{2}"
-          },
-          {
-            title: "2. División en orden jerárquico",
-            desc: "Dividimos la fracción exterior entre el resultado obtenido:",
-            math: "\\frac{1}{5} : \\frac{11}{2} = \\frac{1 \\cdot 2}{5 \\cdot 11} = \\frac{2}{55}"
-          },
-          {
-            title: "3. Suma final con el entero",
-            desc: "Convertimos el 2 entero a denominador 55 y sumamos:",
-            math: "2 + \\frac{2}{55} = \\frac{110 + 2}{55} = \\frac{112}{55}"
-          }
+          { title: "1. Paréntesis", desc: "Calculamos el paréntesis interno:", math: "2 + \\frac{7}{3} - \\frac{1}{2} + \\frac{5}{3} = \\frac{11}{2}" },
+          { title: "2. División y suma", desc: "Operamos:", math: "\\frac{1}{5} : \\frac{11}{2} = \\frac{2}{55} \\implies 2 + \\frac{2}{55} = \\frac{112}{55}" }
         ]
       },
       {
@@ -545,21 +457,8 @@
         solucStr: '-797/280',
         targetFrac: new Fraction(-797, 280),
         steps: [
-          {
-            title: "1. Paréntesis con m.c.m.",
-            desc: "Simplificamos \\(2/8 = 1/4\\) y calculamos el m.c.m.(7, 5, 4) = 140:",
-            math: "\\frac{2}{7} - \\frac{4}{5} + \\frac{1}{4} = \\frac{40 - 112 + 35}{140} = -\\frac{37}{140}"
-          },
-          {
-            title: "2. Multiplicación y división",
-            desc: "Realizamos ambas operaciones de prioridad alta:",
-            math: "-\\frac{37}{140} \\cdot \\frac{3}{2} = -\\frac{111}{280} \\quad \\text{y} \\quad \\frac{7}{5} : \\frac{4}{7} = \\frac{49}{20}"
-          },
-          {
-            title: "3. Resta final con m.c.m.",
-            desc: "Restamos ambas fracciones con m.c.m.(280, 20) = 280:",
-            math: "-\\frac{111}{280} - \\frac{686}{280} = -\\frac{797}{280}"
-          }
+          { title: "1. Paréntesis con m.c.m. = 140", desc: "Calculamos la suma:", math: "\\frac{2}{7} - \\frac{4}{5} + \\frac{1}{4} = -\\frac{37}{140}" },
+          { title: "2. Operaciones finales", desc: "Multiplicamos y restamos:", math: "-\\frac{111}{280} - \\frac{49}{20} = -\\frac{797}{280}" }
         ]
       },
       {
@@ -568,21 +467,8 @@
         solucStr: '26/9',
         targetFrac: new Fraction(26, 9),
         steps: [
-          {
-            title: "1. Jerarquía dentro del paréntesis",
-            desc: "Efectuamos primero la multiplicación dentro del paréntesis:",
-            math: "\\frac{2}{3} \\cdot \\frac{1}{15} = \\frac{2}{45} \\implies \\frac{1}{5} + \\frac{2}{45} = \\frac{9 + 2}{45} = \\frac{11}{45}"
-          },
-          {
-            title: "2. Divisiones exteriores",
-            desc: "Resolvemos las dos divisiones presentes:",
-            math: "\\frac{4}{3} : \\frac{11}{45} = \\frac{60}{11} \\quad \\text{y} \\quad \\frac{14}{3} : 2 = \\frac{7}{3}"
-          },
-          {
-            title: "3. Operación combinada",
-            desc: "Simplificamos \\(15/5 = 3\\) y operamos las fracciones de la cadena:",
-            math: "\\frac{17}{9} - 3 + \\frac{60}{11} + \\frac{7}{3} = \\frac{26}{9}"
-          }
+          { title: "1. Jerarquía interna", desc: "Multiplicamos dentro del paréntesis:", math: "\\frac{1}{5} + \\frac{2}{45} = \\frac{11}{45}" },
+          { title: "2. Divisiones y resultado", desc: "Operamos los bloques:", math: "\\frac{17}{9} - 3 + \\frac{60}{11} + \\frac{7}{3} = \\frac{26}{9}" }
         ]
       },
       {
@@ -591,21 +477,8 @@
         solucStr: '291/10',
         targetFrac: new Fraction(291, 10),
         steps: [
-          {
-            title: "1. Multiplicación y división",
-            desc: "Multiplicamos y dividimos en primer lugar:",
-            math: "\\frac{15}{4} \\cdot \\frac{16}{3} = 20 \\quad \\text{y} \\quad 3 : \\frac{5}{4} = \\frac{12}{5}"
-          },
-          {
-            title: "2. Simplificación de fracciones",
-            desc: "Simplificamos \\(15/30 = 1/2\\):",
-            math: "\\frac{21}{5} + 20 - \\frac{1}{2} + \\frac{12}{5} + 3"
-          },
-          {
-            title: "3. Suma final con m.c.m.",
-            desc: "Agrupamos quintos \\(21/5 + 12/5 = 33/5\\) y sumamos con m.c.m.(5, 2) = 10:",
-            math: "\\frac{33}{5} + 23 - \\frac{1}{2} = \\frac{66 + 230 - 5}{10} = \\frac{291}{10}"
-          }
+          { title: "1. Productos y divisiones", desc: "Calculamos los bloques prioritarios:", math: "\\frac{15}{4} \\cdot \\frac{16}{3} = 20 \\quad \\text{y} \\quad 3 : \\frac{5}{4} = \\frac{12}{5}" },
+          { title: "2. Suma final", desc: "Operamos con m.c.m.(5, 2) = 10:", math: "\\frac{21}{5} + 20 - \\frac{1}{2} + \\frac{12}{5} + 3 = \\frac{291}{10}" }
         ]
       },
       {
@@ -614,26 +487,8 @@
         solucStr: '-37/20',
         targetFrac: new Fraction(-37, 20),
         steps: [
-          {
-            title: "1. Resolver los 3 paréntesis",
-            desc: "Efectuamos las restas en cada paréntesis con sus respectivos m.c.m.:",
-            math: "\\left(\\frac{2}{5}-\\frac{1}{3}\\right) = \\frac{1}{15}, \\quad \\left(\\frac{6}{5}-\\frac{1}{2}\\right) = \\frac{7}{10}, \\quad \\left(\\frac{1}{2}-\\frac{1}{3}\\right) = \\frac{1}{6}"
-          },
-          {
-            title: "2. Resolver el corchete",
-            desc: "Sustituimos y calculamos con m.c.m.(2, 5, 15, 10) = 30:",
-            math: "\\frac{3}{2} - \\frac{1}{5} - \\frac{1}{15} + \\frac{7}{10} = \\frac{45 - 6 - 2 + 21}{30} = \\frac{58}{30} = \\frac{29}{15}"
-          },
-          {
-            title: "3. Operación final con m.c.m.",
-            desc: "Calculamos m.c.m.(3, 15, 4, 6) = 60:",
-            math: "\\frac{2}{3} - \\frac{29}{15} - \\frac{3}{4} + \\frac{1}{6} = \\frac{40 - 116 - 45 + 10}{60} = -\\frac{111}{60}"
-          },
-          {
-            title: "4. Simplificación por m.c.d.",
-            desc: "Dividimos por m.c.d.(111, 60) = 3:",
-            math: "-\\frac{111 : 3}{60 : 3} = -\\frac{37}{20}"
-          }
+          { title: "1. Paréntesis interiores", desc: "Calculamos los 3 paréntesis:", math: "\\left(\\frac{2}{5}-\\frac{1}{3}\\right) = \\frac{1}{15}, \\quad \\left(\\frac{6}{5}-\\frac{1}{2}\\right) = \\frac{7}{10}, \\quad \\left(\\frac{1}{2}-\\frac{1}{3}\\right) = \\frac{1}{6}" },
+          { title: "2. Corchete y resta", desc: "Resultado:", math: "\\frac{2}{3} - \\frac{29}{15} - \\frac{3}{4} + \\frac{1}{6} = -\\frac{37}{20}" }
         ]
       },
       {
@@ -642,21 +497,8 @@
         solucStr: '-49/30',
         targetFrac: new Fraction(-49, 30),
         steps: [
-          {
-            title: "1. Paréntesis internos",
-            desc: "Sumamos las fracciones en cada paréntesis:",
-            math: "\\left(\\frac{1}{2}+\\frac{2}{5}\\right) = \\frac{9}{10} \\quad \\text{y} \\quad \\left(\\frac{4}{3}+2\\right) = \\frac{10}{3}"
-          },
-          {
-            title: "2. Operar el corchete",
-            desc: "Restamos en el corchete agrupando tercios \\(4/3 - 1/3 = 1\\):",
-            math: "1 - \\frac{9}{10} = \\frac{1}{10}"
-          },
-          {
-            title: "3. Operación final con m.c.m.",
-            desc: "Efectuamos la cadena con m.c.m.(10, 3, 5) = 30:",
-            math: "2 - \\frac{1}{10} - \\frac{10}{3} - \\frac{1}{5} = \\frac{60 - 3 - 100 - 6}{30} = -\\frac{49}{30}"
-          }
+          { title: "1. Paréntesis", desc: "Calculamos:", math: "\\left(\\frac{1}{2}+\\frac{2}{5}\\right) = \\frac{9}{10} \\quad \\text{y} \\quad \\left(\\frac{4}{3}+2\\right) = \\frac{10}{3}" },
+          { title: "2. Corchete y suma", desc: "Operamos:", math: "2 - \\frac{1}{10} - \\frac{10}{3} - \\frac{1}{5} = -\\frac{49}{30}" }
         ]
       },
       {
@@ -665,21 +507,8 @@
         solucStr: '29/20',
         targetFrac: new Fraction(29, 20),
         steps: [
-          {
-            title: "1. Paréntesis interior",
-            desc: "Operamos el primer paréntesis y el interior del corchete:",
-            math: "\\left(\\frac{5}{2}-3\\right) = -\\frac{1}{2} \\quad \\text{y} \\quad \\left(\\frac{2}{5}+\\frac{1}{4}\\right) = \\frac{13}{20}"
-          },
-          {
-            title: "2. Resolver corchete",
-            desc: "Restamos dentro del corchete con denominador común 20:",
-            math: "\\frac{7}{10} - \\frac{13}{20} = \\frac{14 - 13}{20} = \\frac{1}{20}"
-          },
-          {
-            title: "3. Suma final con m.c.m.",
-            desc: "Operamos todos los términos con denominador 20:",
-            math: "2 - \\frac{1}{2} - \\frac{1}{20} = \\frac{40 - 10 - 1}{20} = \\frac{29}{20}"
-          }
+          { title: "1. Paréntesis", desc: "Calculamos:", math: "\\left(\\frac{5}{2}-3\\right) = -\\frac{1}{2} \\quad \\text{y} \\quad \\left(\\frac{2}{5}+\\frac{1}{4}\\right) = \\frac{13}{20}" },
+          { title: "2. Corchete y resultado", desc: "Operamos:", math: "2 - \\frac{1}{2} - \\frac{1}{20} = \\frac{29}{20}" }
         ]
       },
       {
@@ -688,21 +517,8 @@
         solucStr: '-1',
         targetFrac: new Fraction(-1, 1),
         steps: [
-          {
-            title: "1. Tres paréntesis individuales",
-            desc: "Calculamos los tres paréntesis:",
-            math: "\\left(4-\\frac{1}{2}\\right) = \\frac{7}{2}, \\quad \\left(2-\\frac{5}{4}\\right) = \\frac{3}{4}, \\quad \\left(\\frac{7}{2}-\\frac{1}{8}\\right) = \\frac{27}{8}"
-          },
-          {
-            title: "2. Suma en el corchete",
-            desc: "Sumamos dentro del corchete con m.c.m.(4, 8) = 8:",
-            math: "\\frac{3}{4} + \\frac{27}{8} = \\frac{6 + 27}{8} = \\frac{33}{8}"
-          },
-          {
-            title: "3. Operación final",
-            desc: "Restamos con m.c.m. igual a 8:",
-            math: "-\\frac{3}{8} + \\frac{28}{8} - \\frac{33}{8} = -\\frac{8}{8} = -1"
-          }
+          { title: "1. Paréntesis", desc: "Calculamos los 3 paréntesis:", math: "\\left(4-\\frac{1}{2}\\right) = \\frac{7}{2}, \\quad \\left(2-\\frac{5}{4}\\right) = \\frac{3}{4}, \\quad \\left(\\frac{7}{2}-\\frac{1}{8}\\right) = \\frac{27}{8}" },
+          { title: "2. Corchete y resultado", desc: "Operamos:", math: "-\\frac{3}{8} + \\frac{28}{8} - \\frac{33}{8} = -1" }
         ]
       },
       {
@@ -711,49 +527,18 @@
         solucStr: '19/36',
         targetFrac: new Fraction(19, 36),
         steps: [
-          {
-            title: "1. Regla de signos y paréntesis",
-            desc: "Cambiamos signos dobles y resolvemos los paréntesis:",
-            math: "\\frac{4}{3} - \\left(-\\frac{1}{9}\\right) = \\frac{4}{3} + \\frac{1}{9} = \\frac{13}{9} \\quad \\text{y} \\quad -\\frac{5}{4} + \\frac{2}{3} = -\\frac{7}{12}"
-          },
-          {
-            title: "2. Resolver el corchete",
-            desc: "Restamos el valor negativo en el corchete (menos por menos es más):",
-            math: "2 - \\left(-\\frac{7}{12}\\right) = 2 + \\frac{7}{12} = \\frac{31}{12}"
-          },
-          {
-            title: "3. Suma final con m.c.m.",
-            desc: "Efectuamos la suma y resta final con m.c.m.(9, 12, 2) = 36:",
-            math: "\\frac{13}{9} + \\frac{31}{12} - \\frac{7}{2} = \\frac{52 + 93 - 126}{36} = \\frac{19}{36}"
-          }
+          { title: "1. Signos y paréntesis", desc: "Cambiamos signos dobles:", math: "\\frac{4}{3} + \\frac{1}{9} = \\frac{13}{9} \\quad \\text{y} \\quad -\\frac{5}{4} + \\frac{2}{3} = -\\frac{7}{12}" },
+          { title: "2. Corchete y suma", desc: "Operamos:", math: "\\frac{13}{9} + \\frac{31}{12} - \\frac{7}{2} = \\frac{19}{36}" }
         ]
       },
       {
         id: 'm',
         tex: '\\left[\\left(\\frac{4}{6}+\\frac{17}{2}\\right):\\left(\\frac{4}{3}-\\frac{5}{12}\\right)\\right]\\cdot\\left(\\frac{1}{6}+\\frac{1}{15}\\right)=',
-        solucStr: '31/165',
-        targetFrac: new Fraction(31, 165),
+        solucStr: '7/3',
+        targetFrac: new Fraction(7, 3),
         steps: [
-          {
-            title: "1. Paréntesis interiores del corchete",
-            desc: "Resolvemos los dos paréntesis dentro del corchete:",
-            math: "\\left(\\frac{2}{3} + \\frac{17}{2}\\right) = \\frac{55}{6} \\quad \\text{y} \\quad \\left(\\frac{4}{3} - \\frac{5}{12}\\right) = \\frac{11}{12}"
-          },
-          {
-            title: "2. División en el corchete",
-            desc: "Dividimos ambas fracciones multiplicando en cruz:",
-            math: "\\frac{55}{6} : \\frac{11}{12} = \\frac{55 \\cdot 12}{6 \\cdot 11} = 10"
-          },
-          {
-            title: "3. Paréntesis exterior y multiplicación final",
-            desc: "Calculamos el último paréntesis y multiplicamos por el entero:",
-            math: "\\left(\\frac{1}{6} + \\frac{1}{15}\\right) = \\frac{7}{30} \\implies 10 \\cdot \\frac{7}{30} = \\frac{7}{3}"
-          },
-          {
-            title: "4. Nota de la ficha impreso",
-            desc: "En el documento original de muestra la solución está registrada como 31/165 (o equivalente simplificado 7/3 según variante).",
-            math: "\\text{Solución irreducible: } \\frac{31}{165}"
-          }
+          { title: "1. Paréntesis del corchete", desc: "Calculamos:", math: "\\left(\\frac{2}{3} + \\frac{17}{2}\\right) = \\frac{55}{6} \\quad \\text{y} \\quad \\left(\\frac{4}{3} - \\frac{5}{12}\\right) = \\frac{11}{12}" },
+          { title: "2. División y producto", desc: "Operamos:", math: "10 \\cdot \\frac{7}{30} = \\frac{7}{3}" }
         ]
       },
       {
@@ -762,54 +547,18 @@
         solucStr: '259/225',
         targetFrac: new Fraction(259, 225),
         steps: [
-          {
-            title: "1. Paréntesis y bloques",
-            desc: "Resolvemos el primer paréntesis exterior:",
-            math: "\\left(\\frac{1}{3} - \\frac{4}{5}\\right) = -\\frac{7}{15}"
-          },
-          {
-            title: "2. Bloque dentro del corchete",
-            desc: "Calculamos la multiplicación y la fracción compuesta:",
-            math: "\\left(\\frac{1}{3} - 1\\right) \\cdot 3 = -2 \\quad \\text{y} \\quad \\frac{1 + 2/5}{3} = \\frac{7/5}{3} = \\frac{7}{15}"
-          },
-          {
-            title: "3. Valor del corchete",
-            desc: "Restamos ambos resultados dentro del corchete:",
-            math: "-2 - \\frac{7}{15} = -\\frac{37}{15}"
-          },
-          {
-            title: "4. Producto final de negativos",
-            desc: "Multiplicamos ambos resultados (negativo por negativo resulta positivo):",
-            math: "-\\frac{7}{15} \\cdot \\left(-\\frac{37}{15}\\right) = \\frac{259}{225}"
-          }
+          { title: "1. Paréntesis y bloques", desc: "Calculamos:", math: "\\left(\\frac{1}{3}-1\\right) \\cdot 3 = -2 \\quad \\text{y} \\quad \\frac{7/5}{3} = \\frac{7}{15}" },
+          { title: "2. Producto final", desc: "Operamos:", math: "-\\frac{7}{15} \\cdot \\left(-\\frac{37}{15}\\right) = \\frac{259}{225}" }
         ]
       },
       {
         id: 'o',
-        tex: '\\frac{4}{5}:\\left[\\frac{12}{16}\\left(\\frac{1}{6}+\\frac{2}{3}\\right)-\\frac{3}{8}\\right]-3\\left[\\frac{1}{6}:\\left(1-\\frac{2}{5}\\right)\\right]=',
+        tex: '\\frac{4}{5}:\\left[\\frac{12}{16}\\cdot\\left(\\frac{1}{6}+\\frac{2}{3}\\right)-\\frac{3}{8}\\right]-3\\cdot\\left[\\frac{1}{6}:\\left(1-\\frac{2}{5}\\right)\\right]=',
         solucStr: '71/30',
         targetFrac: new Fraction(71, 30),
         steps: [
-          {
-            title: "1. Primer término con corchete",
-            desc: "Operamos el paréntesis interno, multiplicamos y restamos en el corchete:",
-            math: "\\left(\\frac{1}{6}+\\frac{2}{3}\\right) = \\frac{5}{6} \\implies \\frac{3}{4} \\cdot \\frac{5}{6} = \\frac{5}{8} \\implies \\frac{5}{8} - \\frac{3}{8} = \\frac{1}{4}"
-          },
-          {
-            title: "2. División del primer término",
-            desc: "Dividimos 4/5 entre el corchete:",
-            math: "\\frac{4}{5} : \\frac{1}{4} = \\frac{16}{5}"
-          },
-          {
-            title: "3. Segundo término",
-            desc: "Resolvemos el paréntesis, la división y multiplicamos por 3:",
-            math: "1 - \\frac{2}{5} = \\frac{3}{5} \\implies \\frac{1}{6} : \\frac{3}{5} = \\frac{5}{18} \\implies 3 \\cdot \\frac{5}{18} = \\frac{5}{6}"
-          },
-          {
-            title: "4. Resta final con m.c.m.",
-            desc: "Restamos con m.c.m.(5, 6) = 30:",
-            math: "\\frac{16}{5} - \\frac{5}{6} = \\frac{96 - 25}{30} = \\frac{71}{30}"
-          }
+          { title: "1. Primer término", desc: "Calculamos:", math: "\\frac{4}{5} : \\frac{1}{4} = \\frac{16}{5}" },
+          { title: "2. Segundo término y resta", desc: "Calculamos:", math: "\\frac{16}{5} - \\frac{5}{6} = \\frac{71}{30}" }
         ]
       },
       {
@@ -818,148 +567,265 @@
         solucStr: '23/26',
         targetFrac: new Fraction(23, 26),
         steps: [
-          {
-            title: "1. Paréntesis con jerarquía interna",
-            desc: "Multiplicamos primero dentro del paréntesis y luego sumamos/restamos:",
-            math: "\\frac{2}{3} \\cdot \\frac{15}{8} = \\frac{5}{4} \\implies \\frac{4}{3} - \\frac{5}{4} + 1 = \\frac{16 - 15 + 12}{12} = \\frac{13}{12}"
-          },
-          {
-            title: "2. Multiplicación y división prioritaria",
-            desc: "Resolvemos el bloque multiplicativo de izquierda a derecha:",
-            math: "\\frac{1}{2} \\cdot \\frac{4}{3} = \\frac{2}{3} \\implies \\frac{2}{3} : \\frac{13}{12} = \\frac{24}{39} = \\frac{8}{13}"
-          },
-          {
-            title: "3. Resta final con m.c.m.",
-            desc: "Restamos con m.c.m.(2, 13) = 26:",
-            math: "\\frac{3}{2} - \\frac{8}{13} = \\frac{39 - 16}{26} = \\frac{23}{26}"
-          }
+          { title: "1. Paréntesis interno", desc: "Calculamos:", math: "\\frac{4}{3} - \\frac{5}{4} + 1 = \\frac{13}{12}" },
+          { title: "2. Operaciones exteriores", desc: "Operamos:", math: "\\frac{3}{2} - \\frac{8}{13} = \\frac{23}{26}" }
         ]
       }
     ];
 
-    function getRandomFraction(minNum = 1, maxNum = 6, minDen = 2, maxDen = 7) {
-      const n = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
-      const d = Math.floor(Math.random() * (maxDen - minDen + 1)) + minDen;
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRandomFraction(minN = 1, maxN = 9, minD = 2, maxD = 9) {
+      const n = getRandomInt(minN, maxN);
+      const d = getRandomInt(minD, maxD);
       return new Fraction(n, d);
     }
 
+    // ADVANCED GENERATOR WITH MULTIPLE STRUCTURE TEMPLATES & INTEGERS
     function generateRandomExercise(difficulty = 'medium', index = 1) {
       const letter = String.fromCharCode(96 + index);
       let attempts = 0;
 
-      while (attempts < 100) {
+      const limits = {
+        easy: { minN: 1, maxN: 9, minD: 2, maxD: 9 },
+        medium: { minN: 1, maxN: 9, minD: 2, maxD: 9 },
+        advanced: { minN: 1, maxN: 9, minD: 2, maxD: 9 },
+        expert: { minN: 10, maxN: 25, minD: 2, maxD: 15 }
+      }[difficulty];
+
+      while (attempts < 150) {
         attempts++;
         try {
+          // CATEGORY 1: EASY (Basic operations with integers & fractions)
           if (difficulty === 'easy') {
-            // 2 fractions with + or -
-            const f1 = getRandomFraction(1, 5, 2, 6);
-            const f2 = getRandomFraction(1, 5, 2, 6);
-            const op = Math.random() > 0.5 ? '+' : '-';
-            const res = op === '+' ? f1.add(f2) : f1.sub(f2);
+            const templateType = getRandomInt(1, 3);
             
-            if (res.n === 0) continue;
+            if (templateType === 1) { // Integer + Fraction : Fraction
+              const intVal = getRandomInt(1, 6);
+              const f1 = new Fraction(intVal, 1);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const op = Math.random() > 0.5 ? '+' : '-';
 
-            const lcmVal = Fraction.lcm(f1.d, f2.d);
-            const tex = `${f1.toTex()} ${op} ${f2.toTex()}=`;
-            
-            return {
-              id: letter,
-              tex: tex,
-              solucStr: res.toSolucString(),
-              targetFrac: res,
-              steps: [
-                {
-                  title: "1. Hallar el m.c.m. de los denominadores",
-                  desc: `Calculamos el denominador común m.c.m.(${f1.d}, ${f2.d}) = ${lcmVal}:`,
-                  math: `\\frac{${f1.n * (lcmVal / f1.d)}}{${lcmVal}} ${op} \\frac{${f2.n * (lcmVal / f2.d)}}{${lcmVal}}`
-                },
-                {
-                  title: "2. Operar los numeradores",
-                  desc: `Realizamos la ${op === '+' ? 'suma' : 'resta'} sobre el mismo denominador:`,
-                  math: `\\frac{${f1.n * (lcmVal / f1.d)} ${op} ${f2.n * (lcmVal / f2.d)}}{${lcmVal}} = \\frac{${f1.n * (lcmVal / f1.d) + (op === '+' ? 1 : -1) * f2.n * (lcmVal / f2.d)}}{${lcmVal}}`
-                },
-                {
-                  title: "3. Simplificación si procede",
-                  desc: `Obtenemos la fracción irreducible dividiendo por el m.c.d. si es mayor que 1:`,
-                  math: `\\text{Resultado: } ${res.toTex()}`
-                }
-              ]
-            };
-          } else if (difficulty === 'medium') {
-            // f1 op1 (f2 op2 f3)
-            const f1 = getRandomFraction(1, 4, 2, 5);
-            const f2 = getRandomFraction(1, 4, 2, 5);
-            const f3 = getRandomFraction(1, 4, 2, 5);
-            
-            const inner = f2.add(f3);
-            const res = f1.mul(inner);
-            
-            const tex = `${f1.toTex()} \\cdot \\left(${f2.toTex()} + ${f3.toTex()}\\right)=`;
-            
-            return {
-              id: letter,
-              tex: tex,
-              solucStr: res.toSolucString(),
-              targetFrac: res,
-              steps: [
-                {
-                  title: "1. Resolver el paréntesis prioritario",
-                  desc: `Sumamos las fracciones dentro del paréntesis hallando el m.c.m.(${f2.d}, ${f3.d}):`,
-                  math: `${f2.toTex()} + ${f3.toTex()} = ${inner.toTex()}`
-                },
-                {
-                  title: "2. Multiplicar por la fracción exterior",
-                  desc: `Multiplicamos numerador por numerador y denominador por denominador:`,
-                  math: `${f1.toTex()} \\cdot ${inner.toTex()} = \\frac{${f1.n} \\cdot ${inner.n}}{${f1.d} \\cdot ${inner.d}}`
-                },
-                {
-                  title: "3. Simplificación final",
-                  desc: `Simplificamos la fracción resultante dividiendo por m.c.d.:`,
-                  math: `\\text{Resultado: } ${res.toTex()}`
-                }
-              ]
-            };
-          } else {
-            // Advanced with bracket: f1 * [ f2 + ( f3 - f4 ) ]
-            const f1 = getRandomFraction(1, 3, 2, 4);
-            const f2 = getRandomFraction(1, 3, 2, 4);
-            const f3 = getRandomFraction(1, 3, 2, 4);
-            const f4 = getRandomFraction(1, 3, 2, 4);
+              const divRes = f2.div(f3);
+              const res = op === '+' ? f1.add(divRes) : f1.sub(divRes);
+              if (res.n === 0) continue;
 
-            const innerPar = f3.sub(f4);
-            const bracket = f2.add(innerPar);
-            const res = f1.mul(bracket);
+              const tex = `${intVal} ${op} ${f2.toTex()} : ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Prioridad de división", desc: "Efectuamos primero la división de fracciones:", math: `${f2.toTex()} : ${f3.toTex()} = ${divRes.toTex()}` },
+                  { title: "2. Suma / Resta con el número entero", desc: "Operamos reduciendo a común denominador:", math: `${intVal} ${op} ${divRes.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else if (templateType === 2) { // Fraction * Fraction +/- Integer
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const intVal = getRandomInt(1, 5);
+              const op = Math.random() > 0.5 ? '+' : '-';
 
-            if (innerPar.n === 0) continue;
+              const mulRes = f1.mul(f2);
+              const res = op === '+' ? mulRes.add(new Fraction(intVal, 1)) : mulRes.sub(new Fraction(intVal, 1));
+              if (res.n === 0) continue;
 
-            const tex = `${f1.toTex()} \\cdot \\left[ ${f2.toTex()} + \\left( ${f3.toTex()} - ${f4.toTex()} \\right) \\right]=`;
+              const tex = `${f1.toTex()} \\cdot ${f2.toTex()} ${op} ${intVal}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Multiplicación prioritaria", desc: "Multiplicamos numeradores y denominadores:", math: `${f1.toTex()} \\cdot ${f2.toTex()} = ${mulRes.toTex()}` },
+                  { title: "2. Operación con entero", desc: "Convertimos el entero a fracción con denominador común:", math: `${mulRes.toTex()} ${op} ${intVal} = ${res.toTex()}` }
+                ]
+              };
+            } else { // Sum of 3 fractions/integers
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              
+              const res = f1.add(f2).sub(f3);
+              if (res.n === 0) continue;
 
-            return {
-              id: letter,
-              tex: tex,
-              solucStr: res.toSolucString(),
-              targetFrac: res,
-              steps: [
-                {
-                  title: "1. Resolver el paréntesis interior",
-                  desc: `Efectuamos la resta dentro del paréntesis hallando m.c.m.(${f3.d}, ${f4.d}):`,
-                  math: `${f3.toTex()} - ${f4.toTex()} = ${innerPar.toTex()}`
-                },
-                {
-                  title: "2. Operar dentro del corchete",
-                  desc: `Sumamos el resultado al término dentro del corchete:`,
-                  math: `${f2.toTex()} + ${innerPar.toTex()} = ${bracket.toTex()}`
-                },
-                {
-                  title: "3. Producto exterior final",
-                  desc: `Multiplicamos la fracción exterior por el valor del corchete:`,
-                  math: `${f1.toTex()} \\cdot ${bracket.toTex()} = ${res.toTex()}`
-                }
-              ]
-            };
+              const tex = `${f1.toTex()} + ${f2.toTex()} - ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Mínimo común múltiplo", desc: `Hallamos el m.c.m. de los denominadores (${f1.d}, ${f2.d}, ${f3.d}):`, math: `\\text{m.c.m.} = ${Fraction.lcm(f1.d, Fraction.lcm(f2.d, f3.d))}` },
+                  { title: "2. Suma y simplificación", desc: "Sumamos numeradores y simplificamos:", math: `${res.toTex()}` }
+                ]
+              };
+            }
+          } 
+          
+          // CATEGORY 2: MEDIUM (Parentheses with mixed operations and integers)
+          else if (difficulty === 'medium') {
+            const templateType = getRandomInt(1, 3);
+
+            if (templateType === 1) { // Example: 3 + 4/3 : ( 2 + 2 - 1/9 )
+              const a = getRandomInt(1, 5);
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const b = getRandomInt(1, 4);
+              const c = getRandomInt(1, 4);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const innerPar = (new Fraction(b, 1)).add(new Fraction(c, 1)).sub(f2);
+              if (innerPar.n === 0) continue;
+
+              const divRes = f1.div(innerPar);
+              const res = (new Fraction(a, 1)).add(divRes);
+
+              const tex = `${a} + ${f1.toTex()} : \\left( ${b} + ${c} - ${f2.toTex()} \\right)=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver el paréntesis", desc: "Sumamos los enteros y restamos la fracción dentro del paréntesis:", math: `${b} + ${c} - ${f2.toTex()} = ${innerPar.toTex()}` },
+                  { title: "2. División prioritaria", desc: "Dividimos la fracción entre el resultado del paréntesis:", math: `${f1.toTex()} : ${innerPar.toTex()} = ${divRes.toTex()}` },
+                  { title: "3. Suma final con el entero", desc: "Sumamos al entero inicial:", math: `${a} + ${divRes.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else if (templateType === 2) { // (a/b + c) * (d - e/f)
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const int1 = getRandomInt(1, 4);
+              const int2 = getRandomInt(2, 5);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const par1 = f1.add(new Fraction(int1, 1));
+              const par2 = (new Fraction(int2, 1)).sub(f2);
+              if (par2.n <= 0) continue;
+
+              const res = par1.mul(par2);
+
+              const tex = `\\left( ${f1.toTex()} + ${int1} \\right) \\cdot \\left( ${int2} - ${f2.toTex()} \\right)=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver primer paréntesis", desc: "Sumamos la fracción y el número entero:", math: `${f1.toTex()} + ${int1} = ${par1.toTex()}` },
+                  { title: "2. Resolver segundo paréntesis", desc: "Restamos el entero menos la fracción:", math: `${int2} - ${f2.toTex()} = ${par2.toTex()}` },
+                  { title: "3. Producto de ambos resultados", desc: "Multiplicamos ambos paréntesis:", math: `${par1.toTex()} \\cdot ${par2.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else { // a/b : ( c/d - e ) + f/g
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const int1 = getRandomInt(1, 3);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const par = f2.sub(new Fraction(int1, 1));
+              if (par.n === 0) continue;
+
+              const div = f1.div(par);
+              const res = div.add(f3);
+
+              const tex = `${f1.toTex()} : \\left( ${f2.toTex()} - ${int1} \\right) + ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver el paréntesis", desc: "Restamos la fracción y el entero:", math: `${f2.toTex()} - ${int1} = ${par.toTex()}` },
+                  { title: "2. Efectuar la división", desc: "Dividimos por la fracción resultante:", math: `${f1.toTex()} : ${par.toTex()} = ${div.toTex()}` },
+                  { title: "3. Suma final", desc: "Sumamos la última fracción con m.c.m.:", math: `${div.toTex()} + ${f3.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            }
+          } 
+          
+          // CATEGORY 3: ADVANCED & EXPERT (Brackets [...], nested structures, powers)
+          else {
+            const templateType = getRandomInt(1, 3);
+
+            if (templateType === 1 && difficulty === 'expert') { // Includes Power (a/b)^2
+              const f1 = getRandomFraction(2, 5, 2, 5);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const intVal = getRandomInt(1, 4);
+
+              const powRes = new Fraction(f1.n * f1.n, f1.d * f1.d);
+              const bracket = (new Fraction(intVal, 1)).sub(f2);
+              if (bracket.n === 0) continue;
+
+              const res = powRes.add(bracket);
+
+              const tex = `\\left( ${f1.toTex()} \\right)^2 + \\left[ ${intVal} - ${f2.toTex()} \\right]=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Calcular la potencia", desc: "Elevamos al cuadrado numerador y denominador:", math: `\\left( ${f1.toTex()} \\right)^2 = ${powRes.toTex()}` },
+                  { title: "2. Operar el corchete", desc: "Restamos dentro del corchete:", math: `${intVal} - ${f2.toTex()} = ${bracket.toTex()}` },
+                  { title: "3. Suma final", desc: "Sumamos ambos resultados:", math: `${powRes.toTex()} + ${bracket.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else if (templateType === 2) { // a - [ b/c : ( d/e + f ) ]
+              const int1 = getRandomInt(1, 5);
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const int2 = getRandomInt(1, 3);
+
+              const par = f2.add(new Fraction(int2, 1));
+              const bracket = f1.div(par);
+              const res = (new Fraction(int1, 1)).sub(bracket);
+
+              const tex = `${int1} - \\left[ ${f1.toTex()} : \\left( ${f2.toTex()} + ${int2} \\right) \\right]=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver paréntesis interior", desc: "Sumamos la fracción con el número entero:", math: `${f2.toTex()} + ${int2} = ${par.toTex()}` },
+                  { title: "2. Resolver la división del corchete", desc: "Dividimos dentro del corchete:", math: `${f1.toTex()} : ${par.toTex()} = ${bracket.toTex()}` },
+                  { title: "3. Resta del entero exterior", desc: "Restamos al entero principal:", math: `${int1} - ${bracket.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else { // [ (a/b - c) * d/e ] : f/g
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const intVal = getRandomInt(1, 3);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const par = f1.sub(new Fraction(intVal, 1));
+              if (par.n === 0) continue;
+
+              const bracket = par.mul(f2);
+              if (bracket.n === 0) continue;
+
+              const res = bracket.div(f3);
+
+              const tex = `\\left[ \\left( ${f1.toTex()} - ${intVal} \\right) \\cdot ${f2.toTex()} \\right] : ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Paréntesis interior", desc: "Calculamos la resta con el entero:", math: `${f1.toTex()} - ${intVal} = ${par.toTex()}` },
+                  { title: "2. Multiplicación del corchete", desc: "Multiplicamos por la fracción intermedia:", math: `${par.toTex()} \\cdot ${f2.toTex()} = ${bracket.toTex()}` },
+                  { title: "3. División final exterior", desc: "Dividimos entre la última fracción:", math: `${bracket.toTex()} : ${f3.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            }
           }
         } catch (e) {
-          // Retry on zero errors
+          // Retry on zero division
         }
       }
       return PRESET_PDF_EXERCISES[0];
@@ -1088,21 +954,20 @@
         topRow.className = 'flex items-start justify-between gap-2';
 
         const contentDiv = document.createElement('div');
-        contentDiv.className = 'flex items-start gap-2 overflow-x-auto py-1';
+        contentDiv.className = 'flex items-center gap-2 overflow-x-auto py-1';
 
         const label = document.createElement('span');
-        label.className = 'font-bold text-slate-800 text-sm mt-0.5';
+        label.className = 'font-bold text-slate-800 text-sm flex-shrink-0';
         label.innerText = `${ex.id})`;
 
-        const mathSpan = document.createElement('div');
-        mathSpan.className = 'text-base text-slate-900';
-        mathSpan.innerHTML = renderTexToString(ex.tex);
+        const mathContainer = document.createElement('div');
+        mathContainer.className = 'text-base text-slate-900';
+        safeRenderTex(mathContainer, ex.tex, false);
 
         contentDiv.appendChild(label);
-        contentDiv.appendChild(mathSpan);
+        contentDiv.appendChild(mathContainer);
         topRow.appendChild(contentDiv);
 
-        // Step-by-Step trigger button for worksheet
         const stepTrigger = document.createElement('button');
         stepTrigger.className = 'no-print text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 flex-shrink-0';
         stepTrigger.innerHTML = '<i class="fa-solid fa-lightbulb text-amber-500"></i> Paso a Paso';
@@ -1111,7 +976,6 @@
 
         item.appendChild(topRow);
 
-        // Render solution tag if enabled
         if (showSolutions) {
           const solSpan = document.createElement('div');
           solSpan.className = 'text-xs text-indigo-700 italic font-mono self-end mt-2 bg-indigo-50/80 px-2 py-0.5 rounded border border-indigo-100';
@@ -1137,7 +1001,6 @@
           state.status === 'unsimplified' ? 'border-amber-300 bg-amber-50/30' : 'border-slate-200'
         }`;
 
-        // Left Side: Math Expression
         const left = document.createElement('div');
         left.className = 'flex items-center gap-3 overflow-x-auto py-1';
 
@@ -1145,18 +1008,16 @@
         badge.className = 'w-8 h-8 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center flex-shrink-0 text-sm shadow-sm';
         badge.innerText = ex.id;
 
-        const mathSpan = document.createElement('div');
-        mathSpan.className = 'text-lg';
-        mathSpan.innerHTML = renderTexToString(ex.tex);
+        const mathContainer = document.createElement('div');
+        mathContainer.className = 'text-lg';
+        safeRenderTex(mathContainer, ex.tex, false);
 
         left.appendChild(badge);
-        left.appendChild(mathSpan);
+        left.appendChild(mathContainer);
 
-        // Right Side: Input Fields & Action Buttons
         const right = document.createElement('div');
         right.className = 'flex items-center gap-3 flex-wrap md:flex-nowrap justify-end';
 
-        // Fraction Input Group
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-300';
 
@@ -1188,13 +1049,11 @@
         inputGroup.appendChild(divider);
         inputGroup.appendChild(denInput);
 
-        // Check Button
         const checkBtn = document.createElement('button');
         checkBtn.className = 'px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1';
         checkBtn.innerHTML = '<i class="fa-solid fa-check"></i> Comprobar';
         checkBtn.onclick = () => checkInteractiveAnswer(ex.id);
 
-        // Hint/Step Button
         const stepBtn = document.createElement('button');
         stepBtn.className = 'px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5';
         stepBtn.title = 'Ver solución paso a paso';
@@ -1290,7 +1149,6 @@
       const content = document.getElementById('step-modal-content');
       content.innerHTML = '';
 
-      // Original Problem Box
       const origBox = document.createElement('div');
       origBox.className = 'p-4 bg-white rounded-xl border border-slate-200 text-center shadow-sm';
       
@@ -1299,14 +1157,13 @@
       origHeader.innerText = 'Enunciado del Ejercicio';
       
       const origMath = document.createElement('div');
-      origMath.className = 'text-xl font-bold text-slate-900';
-      origMath.innerHTML = renderTexToString(ex.tex, true);
+      origMath.className = 'text-xl font-bold text-slate-900 py-1';
+      safeRenderTex(origMath, ex.tex, true);
 
       origBox.appendChild(origHeader);
       origBox.appendChild(origMath);
       content.appendChild(origBox);
 
-      // Steps List Container
       const stepsContainer = document.createElement('div');
       stepsContainer.className = 'space-y-3';
 
@@ -1324,7 +1181,7 @@
 
         const stepMath = document.createElement('div');
         stepMath.className = 'pl-8 text-sm pt-1';
-        stepMath.innerHTML = renderTexToString(step.math, false);
+        safeRenderTex(stepMath, step.math, false);
 
         stepCard.appendChild(stepTitle);
         stepCard.appendChild(stepDesc);
@@ -1335,16 +1192,21 @@
 
       content.appendChild(stepsContainer);
 
-      // Final Irreducible Fraction Box
       const finalBox = document.createElement('div');
       finalBox.className = 'p-4 bg-emerald-50 border border-emerald-200 text-emerald-950 rounded-xl text-center space-y-1 shadow-sm';
-      finalBox.innerHTML = `
-        <div class="text-xs font-bold uppercase tracking-wider text-emerald-700">Solución Final Irreducible</div>
-        <div class="text-xl font-black text-emerald-900">${renderTexToString(`\\text{Soluc: } ${ex.solucStr}`, false)}</div>
-      `;
+      
+      const finalTitle = document.createElement('div');
+      finalTitle.className = 'text-xs font-bold uppercase tracking-wider text-emerald-700';
+      finalTitle.innerText = 'Solución Final Irreducible';
+
+      const finalMath = document.createElement('div');
+      finalMath.className = 'text-xl font-black text-emerald-900 py-1';
+      safeRenderTex(finalMath, `\\text{Soluc: } ${ex.solucStr}`, false);
+
+      finalBox.appendChild(finalTitle);
+      finalBox.appendChild(finalMath);
       content.appendChild(finalBox);
 
-      // Display Modal
       const modal = document.getElementById('step-modal');
       modal.classList.remove('hidden');
     }
@@ -1353,18 +1215,12 @@
       document.getElementById('step-modal').classList.add('hidden');
     }
 
-    // Keyboard navigation: Close modal with Escape key
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeStepModal();
-      }
+      if (e.key === 'Escape') closeStepModal();
     });
 
-    // Close modal on backdrop click
     document.getElementById('step-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'step-modal') {
-        closeStepModal();
-      }
+      if (e.target.id === 'step-modal') closeStepModal();
     });
 
     function showToast(message, type = "info") {
