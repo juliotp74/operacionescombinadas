@@ -1,1323 +1,1250 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ley de las Presiones Parciales de Dalton</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter y JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="author" content="Julio Trujillo Pastor">
+  <meta name="description" content="Generador de fichas interactivo y descargable para operaciones combinadas con fracciones.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Fichas - Operaciones Combinadas con Fracciones</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- KaTeX for crisp mathematical notation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap');
     
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        gasN2: '#3B82F6', // Azul Nitrógeno
-                        gasO2: '#EF4444', // Rojo Oxígeno
-                        gasAr: '#10B981', // Verde Argón
-                    }
-                }
-            }
-        }
-    </script>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
 
-    <style>
-        input[type=range] {
-            accent-color: #6366F1;
-        }
-        .glow-box {
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.12);
-        }
-        .canvas-container {
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-        }
-        sub, sup {
-            line-height: 0;
-        }
-    </style>
+    /* Print-specific CSS styles */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .print-only {
+        display: block !important;
+      }
+
+      .worksheet-paper {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0.5cm !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .exercise-grid-2 {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 1.2rem 1.5rem !important;
+      }
+
+      .exercise-grid-1 {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+      }
+
+      .exercise-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        padding: 0.4rem 0 !important;
+      }
+
+      .katex-display {
+        margin: 0.3em 0 !important;
+      }
+    }
+
+    .worksheet-paper {
+      background: #ffffff;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border: 1px solid #e2e8f0;
+    }
+
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+      margin: 0;
+    }
+
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex flex-col">
 
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl shadow-lg shadow-indigo-500/20 text-white">
-                    <i class="fa-solid fa-atom text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-                        Ley de las Presiones Parciales de Dalton
-                    </h1>
-                    <p class="text-xs text-slate-400">Simulador Fisicoquímico Interactivo & Visual</p>
-                </div>
-            </div>
-
-            <!-- Navegación por Pestañas -->
-            <nav class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-sm font-medium">
-                <button id="tab-btn-lab" onclick="switchTab('lab')" class="px-4 py-2 rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow-md">
-                    <i class="fa-solid fa-flask text-xs"></i>
-                    <span>Laboratorio</span>
-                </button>
-                <button id="tab-btn-theory" onclick="switchTab('theory')" class="px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-700/50">
-                    <i class="fa-solid fa-square-root-variable text-xs"></i>
-                    <span>Ecuaciones</span>
-                </button>
-                <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-700/50">
-                    <i class="fa-solid fa-graduation-cap text-xs"></i>
-                    <span>Desafíos</span>
-                </button>
-            </nav>
+  <!-- Header / Navigation Bar -->
+  <header class="no-print bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Clean SVG Fraction Icon -->
+        <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-indigo-600/30 flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 10h6m-7-5h8"></path>
+          </svg>
         </div>
-    </header>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg leading-tight text-slate-100 flex items-center gap-2">
+            Fichas de Operaciones Combinadas
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Fracciones, Números Enteros, Paréntesis, Corchetes y Jerarquía</p>
+        </div>
+      </div>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Mode Selector Tabs -->
+      <div class="flex items-center gap-1 sm:gap-2 bg-slate-800 p-1 rounded-xl border border-slate-700">
+        <button id="tab-worksheet-btn" onclick="switchView('worksheet')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-indigo-600 text-white shadow">
+          <i class="fa-solid fa-file-lines mr-1.5"></i>Hoja de Trabajo
+        </button>
+        <button id="tab-interactive-btn" onclick="switchView('interactive')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white">
+          <i class="fa-solid fa-gamepad mr-1.5"></i>Modo Práctica
+        </button>
+      </div>
+    </div>
+  </header>
 
-        <!-- ================= PESTAÑA 1: LABORATORIO ================= -->
-        <section id="tab-lab" class="space-y-6">
-            
-            <!-- Barra Superior de Resumen Rápido de Presión -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex items-center gap-3">
-                    <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
-                        <i class="fa-solid fa-wind text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 block">Presión N<sub>2</sub> (P<sub>N<sub>2</sub></sub>)</span>
-                        <span id="stat-pn2" class="text-lg font-bold text-blue-400 font-mono">0.00 atm</span>
-                    </div>
-                </div>
+  <!-- Main Application Wrapper -->
+  <div class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
 
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex items-center gap-3">
-                    <div class="p-3 bg-red-500/10 text-red-400 rounded-xl border border-red-500/20">
-                        <i class="fa-solid fa-fire-flame-simple text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 block">Presión O<sub>2</sub> (P<sub>O<sub>2</sub></sub>)</span>
-                        <span id="stat-po2" class="text-lg font-bold text-red-400 font-mono">0.00 atm</span>
-                    </div>
-                </div>
+    <!-- Sidebar Controls Panel -->
+    <aside class="no-print lg:w-80 flex-shrink-0 flex flex-col gap-5">
+      
+      <!-- Source Generator Selector -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-database text-indigo-500"></i> Fuente de Ejercicios
+        </h2>
+        
+        <div class="space-y-2">
+          <button id="btn-load-preset" onclick="loadPresetPDF()" class="w-full text-left p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 transition-all flex items-start gap-3 group">
+            <i class="fa-solid fa-file-pdf text-red-500 text-xl mt-0.5"></i>
+            <div>
+              <div class="font-semibold text-slate-800 text-sm group-hover:text-indigo-700">Ficha PDF Original</div>
+              <p class="text-xs text-slate-500">16 ejercicios exactos (a-p) del documento original</p>
+            </div>
+          </button>
 
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 flex items-center gap-3">
-                    <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
-                        <i class="fa-solid fa-circle-dot text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 block">Presión Ar (P<sub>Ar</sub>)</span>
-                        <span id="stat-par" class="text-lg font-bold text-emerald-400 font-mono">0.00 atm</span>
-                    </div>
-                </div>
+          <button id="btn-load-random" onclick="generateRandomSet()" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-start gap-3 group">
+            <i class="fa-solid fa-dice text-emerald-500 text-xl mt-0.5"></i>
+            <div>
+              <div class="font-semibold text-slate-800 text-sm group-hover:text-emerald-700">Generador Variado</div>
+              <p class="text-xs text-slate-500">Operaciones dinámicas con enteros, paréntesis y potencias</p>
+            </div>
+          </button>
+        </div>
+      </div>
 
-                <div class="bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 rounded-2xl p-3.5 flex items-center gap-3">
-                    <div class="p-3 bg-indigo-500/20 text-indigo-300 rounded-xl border border-indigo-500/30">
-                        <i class="fa-solid fa-gauge-high text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-indigo-300 block">Presión Total (P<sub>total</sub>)</span>
-                        <span id="stat-ptotal" class="text-xl font-black text-indigo-300 font-mono">0.00 atm</span>
-                    </div>
-                </div>
+      <!-- Generator Settings -->
+      <div id="random-settings-panel" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm transition-all opacity-75">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-500"></i> Ajustes del Generador
+        </h2>
+
+        <div class="space-y-4 text-sm">
+          <div>
+            <label for="exercise-count" class="block font-medium text-slate-700 mb-1">Número de Ejercicios</label>
+            <select id="exercise-count" onchange="onSettingsChanged()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="5">5 ejercicios</option>
+              <option value="8">8 ejercicios</option>
+              <option value="10" selected>10 ejercicios</option>
+              <option value="12">12 ejercicios</option>
+              <option value="16">16 ejercicios</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="difficulty-level" class="block font-medium text-slate-700 mb-1">Estructura y Dificultad</label>
+            <select id="difficulty-level" onchange="onSettingsChanged()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="easy">🟢 Básico (Fracciones y Enteros simples)</option>
+              <option value="medium">🟡 Intermedio (Jerarquía con Paréntesis)</option>
+              <option value="advanced" selected>🔴 Avanzado (Corchetes [...] y Enteros)</option>
+              <option value="expert">🟣 Experto (Corchetes + Potencias + Dos Cifras)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Display Options & Header customization -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-eye text-indigo-500"></i> Opciones de Visualización
+        </h2>
+
+        <div class="space-y-3 text-sm">
+          <label class="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200">
+            <span class="font-medium text-slate-700">Mostrar Solución <code class="text-xs text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">(Soluc: a/b)</code></span>
+            <input type="checkbox" id="toggle-solutions-cb" onchange="toggleSolutions(this.checked)" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+          </label>
+
+          <div>
+            <label class="block font-medium text-slate-700 mb-1">Columnas en Ficha</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="setGridColumns(1)" id="col-1-btn" class="py-1.5 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">1 Columna</button>
+              <button onclick="setGridColumns(2)" id="col-2-btn" class="py-1.5 px-3 border-2 border-indigo-600 bg-indigo-50 rounded-xl text-xs font-semibold text-indigo-700">2 Columnas</button>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 space-y-2">
+            <label class="block font-medium text-slate-700 text-xs">Título del Documento</label>
+            <input type="text" id="doc-title-input" value="Operaciones combinadas con fracciones" oninput="updateHeaderDetails()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-800">
+
+            <label class="block font-medium text-slate-700 text-xs">Curso / Asignatura</label>
+            <input type="text" id="doc-course-input" value="Matemáticas 1º-4º ESO" oninput="updateHeaderDetails()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-800">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2">
+        <button onclick="window.print()" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-print"></i> Imprimir / Exportar PDF
+        </button>
+        <button onclick="regenerateCurrentSet()" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-rotate-right"></i> Regenerar Ejercicios
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- Main Display View Area -->
+    <main class="flex-grow">
+      
+      <!-- VIEW 1: PRINTABLE WORKSHEET VIEW -->
+      <section id="worksheet-view" class="worksheet-paper rounded-2xl p-6 sm:p-10 transition-all min-h-[800px] flex flex-col justify-between">
+        
+        <div>
+          <header class="border-b-2 border-slate-800 pb-4 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <h1 id="header-doc-title" class="text-2xl font-bold text-slate-900 tracking-tight">Operaciones combinadas con fracciones</h1>
+              <span id="header-doc-course" class="text-xs font-semibold bg-slate-100 border border-slate-300 text-slate-700 px-2.5 py-1 rounded-md self-start sm:self-auto">Matemáticas 1º-4º ESO</span>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                <!-- Columna Izquierda: Panel de Parámetros Controlables -->
-                <div class="lg:col-span-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-5 glow-box">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                        <h2 class="font-bold text-slate-200 flex items-center gap-2">
-                            <i class="fa-solid fa-sliders text-indigo-400"></i>
-                            Controles de Mezcla
-                        </h2>
-                        <button onclick="resetLab()" class="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all border border-slate-700">
-                            <i class="fa-solid fa-rotate-left mr-1"></i>Reiniciar
-                        </button>
-                    </div>
-
-                    <!-- Cantidad de Moles Nitrógeno N2 -->
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center text-sm">
-                            <label for="slider-n2" class="font-medium text-blue-400 flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
-                                Nitrógeno (N<sub>2</sub>)
-                            </label>
-                            <span id="val-n2" class="font-mono text-xs bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded-md border border-blue-500/20">0.60 mol</span>
-                        </div>
-                        <input type="range" id="slider-n2" min="0" max="2" step="0.02" value="0.60" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Cantidad de Moles Oxígeno O2 -->
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center text-sm">
-                            <label for="slider-o2" class="font-medium text-red-400 flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
-                                Oxígeno (O<sub>2</sub>)
-                            </label>
-                            <span id="val-o2" class="font-mono text-xs bg-red-500/10 text-red-300 px-2 py-0.5 rounded-md border border-red-500/20">0.40 mol</span>
-                        </div>
-                        <input type="range" id="slider-o2" min="0" max="2" step="0.02" value="0.40" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Cantidad de Moles Argón Ar -->
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center text-sm">
-                            <label for="slider-ar" class="font-medium text-emerald-400 flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-                                Argón (Ar)
-                            </label>
-                            <span id="val-ar" class="font-mono text-xs bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-500/20">0.20 mol</span>
-                        </div>
-                        <input type="range" id="slider-ar" min="0" max="2" step="0.02" value="0.20" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <hr class="border-slate-800">
-
-                    <!-- Volumen del Contenedor (Pistón) -->
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center text-sm">
-                            <label for="slider-vol" class="font-medium text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-up-down-left-right text-indigo-400 text-xs"></i>
-                                Volumen del Contenedor (V)
-                            </label>
-                            <span id="val-vol" class="font-mono text-xs bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded-md border border-indigo-500/20">22.4 L</span>
-                        </div>
-                        <input type="range" id="slider-vol" min="10" max="45" value="22.4" step="0.1" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <!-- Temperatura Absoluta -->
-                    <div class="space-y-1.5">
-                        <div class="flex justify-between items-center text-sm">
-                            <label for="slider-temp" class="font-medium text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-temperature-three-quarters text-amber-400 text-xs"></i>
-                                Temperatura (T)
-                            </label>
-                            <span id="val-temp" class="font-mono text-xs bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded-md border border-amber-500/20">273 K (0°C)</span>
-                        </div>
-                        <input type="range" id="slider-temp" min="150" max="600" value="273" step="1" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
-                    </div>
-
-                    <hr class="border-slate-800">
-
-                    <!-- Filtro de Aislamiento Visual de Gases -->
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                            Aislamiento Visual de Gases:
-                        </label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="setGasFilter('all')" id="filter-all" class="filter-btn text-xs py-2 px-3 rounded-lg border border-indigo-500 bg-indigo-600/20 text-indigo-300 font-medium transition-all">
-                                <i class="fa-solid fa-layer-group mr-1.5"></i>Todos (Mezcla)
-                            </button>
-                            <button onclick="setGasFilter('N2')" id="filter-N2" class="filter-btn text-xs py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 font-medium hover:border-blue-500/50 transition-all">
-                                <span class="w-2 h-2 rounded-full bg-blue-500 inline-block mr-1"></span>Solo N<sub>2</sub>
-                            </button>
-                            <button onclick="setGasFilter('O2')" id="filter-O2" class="filter-btn text-xs py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 font-medium hover:border-red-500/50 transition-all">
-                                <span class="w-2 h-2 rounded-full bg-red-500 inline-block mr-1"></span>Solo O<sub>2</sub>
-                            </button>
-                            <button onclick="setGasFilter('Ar')" id="filter-Ar" class="filter-btn text-xs py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 font-medium hover:border-emerald-500/50 transition-all">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span>Solo Ar
-                            </button>
-                        </div>
-                        <p class="text-[11px] text-slate-400 mt-2 leading-relaxed italic">
-                            <i class="fa-solid fa-circle-info mr-1 text-indigo-400"></i>
-                            Aislar un gas demuestra que cada uno ocupa todo el volumen y ejerce su propia presión independientemente de los otros.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-5 flex flex-col items-center">
-                    <div class="w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col items-center glow-box">
-                        <div class="w-full flex justify-between items-center mb-3">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                                <span class="relative flex h-2 w-2">
-                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                </span>
-                                Cámara de Colisión Física 2D
-                            </span>
-                            <span id="canvas-status-tag" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                                Vista: Mezcla Completa
-                            </span>
-                        </div>
-
-                        <!-- Canvas 2D -->
-                        <div class="relative w-full aspect-square max-w-[380px] rounded-xl overflow-hidden canvas-container border-2 border-slate-700 shadow-inner">
-                            <canvas id="simCanvas" width="380" height="380" class="w-full h-full block"></canvas>
-                        </div>
-
-                        <!-- Leyenda interactiva de gases -->
-                        <div class="w-full mt-4 flex items-center justify-around text-xs border-t border-slate-800 pt-3">
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></span>
-                                <span class="text-slate-300 font-medium">N<sub>2</sub> (28 g/mol)</span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-3 h-3 rounded-full bg-red-500 shadow-sm shadow-red-500/50"></span>
-                                <span class="text-slate-300 font-medium">O<sub>2</sub> (32 g/mol)</span>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-                                <span class="text-slate-300 font-medium">Ar (40 g/mol)</span>
-                            </div>
-                        </div>
-                        <p class="text-[11px] text-slate-400 mt-2.5 text-center italic">
-                            <i class="fa-solid fa-circle-info mr-1 text-indigo-400"></i>
-                            Escala del simulador: 1 esfera en la cámara representa 0,02 moles de gas.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-3 space-y-5">
-                    
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
-                        <h3 class="font-bold text-slate-200 text-sm border-b border-slate-800 pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-pie text-indigo-400"></i>
-                            Distribución de Presión Parcial
-                        </h3>
-
-                        <!-- Barra Proporcional Acumulada -->
-                        <div>
-                            <div class="flex justify-between text-xs text-slate-400 mb-1.5">
-                                <span>Fracción Molar Total</span>
-                                <span class="font-mono text-slate-200">100%</span>
-                            </div>
-                            <div class="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex border border-slate-700/50">
-                                <div id="bar-n2" class="bg-blue-500 h-full transition-all duration-300" style="width: 50%;"></div>
-                                <div id="bar-o2" class="bg-red-500 h-full transition-all duration-300" style="width: 33.3%;"></div>
-                                <div id="bar-ar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 16.7%;"></div>
-                            </div>
-                        </div>
-
-                        <!-- Detalles por Gas -->
-                        <div class="space-y-2.5 pt-2">
-                            <!-- Nitrógeno -->
-                            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-blue-500/20 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                                    <div>
-                                        <div class="text-xs font-semibold text-slate-200">Nitrógeno (N<sub>2</sub>)</div>
-                                        <div class="text-[11px] text-slate-400 font-mono" id="frac-n2">X = 0.500</div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-sm font-bold font-mono text-blue-400" id="press-n2">0.00 atm</div>
-                                    <div class="text-[10px] text-slate-400" id="pct-n2">50.0% P_total</div>
-                                </div>
-                            </div>
-
-                            <!-- Oxígeno -->
-                            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-red-500/20 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                                    <div>
-                                        <div class="text-xs font-semibold text-slate-200">Oxígeno (O<sub>2</sub>)</div>
-                                        <div class="text-[11px] text-slate-400 font-mono" id="frac-o2">X = 0.333</div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-sm font-bold font-mono text-red-400" id="press-o2">0.00 atm</div>
-                                    <div class="text-[10px] text-slate-400" id="pct-o2">33.3% P_total</div>
-                                </div>
-                            </div>
-
-                            <!-- Argón -->
-                            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-emerald-500/20 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                    <div>
-                                        <div class="text-xs font-semibold text-slate-200">Argón (Ar)</div>
-                                        <div class="text-[11px] text-slate-400 font-mono" id="frac-ar">X = 0.167</div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-sm font-bold font-mono text-emerald-400" id="press-ar">0.00 atm</div>
-                                    <div class="text-[10px] text-slate-400" id="pct-ar">16.7% P_total</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ecuación Sintética Rápida -->
-                        <div class="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-center">
-                            <span class="text-[11px] text-indigo-300 font-mono block mb-1">Ecuación Sumatoria de Dalton:</span>
-                            <div id="equation-sum-live" class="text-xs font-mono text-slate-200 font-bold">
-                                0.00 = 0.00 + 0.00 + 0.00
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-slate-700 pt-2 border-t border-dashed border-slate-300">
+              <div><span class="font-semibold">Alumno/a:</span> __________________________</div>
+              <div><span class="font-semibold">Fecha:</span> ______________</div>
+              <div><span class="font-semibold">Curso:</span> ________  <span class="ml-2 font-semibold">Nota:</span> _____</div>
             </div>
-        </section>
+          </header>
 
-        <!-- ================= PESTAÑA 2: TEORÍA Y ECUACIONES ================= -->
-        <section id="tab-theory" class="hidden space-y-6">
-            
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box">
-                <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-book-open text-indigo-400"></i>
-                    Fundamentos Matemáticos de la Ley de Dalton
-                </h2>
-                <p class="text-slate-300 text-sm leading-relaxed">
-                    Formulada por John Dalton en 1801, establece que en una mezcla de gases no reactivos, la <b>presión total</b> ejercida es igual a la <b>suma de las presiones parciales</b> de cada uno de los gases individuales presentes en el contenedor.
-                </p>
+          <div class="mb-6 bg-slate-50 border-l-4 border-indigo-600 p-3.5 rounded-r-xl text-sm text-slate-700 no-print flex items-start gap-3">
+            <i class="fa-solid fa-circle-info text-indigo-600 text-lg mt-0.5"></i>
+            <div>
+              <p class="font-semibold text-slate-900">Instrucciones:</p>
+              <p class="text-xs text-slate-600 mt-0.5">Efectuar las siguientes operaciones combinadas con fracciones y números enteros. Respeta la jerarquía de operaciones y simplifica el resultado final.</p>
             </div>
+          </div>
+          
+          <p class="print-only text-sm font-semibold mb-4 hidden">1. Efectuar las siguientes operaciones combinadas, simplificando siempre en todos los pasos y respetando la jerarquía:</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Tarjeta 1: Ecuación Principal -->
-                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
-                            <i class="fa-solid fa-calculator text-lg"></i>
-                        </div>
-                        <h3 class="font-bold text-slate-200">1. Presión Total (P<sub>total</sub>)</h3>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Cada gas se comporta de manera independiente dentro del contenedor, chocando contra las paredes como si los otros gases no existieran.
-                    </p>
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono text-indigo-300 text-lg font-bold">
-                        P<sub>total</sub> = P<sub>1</sub> + P<sub>2</sub> + P<sub>3</sub> + ... + P<sub>n</sub>
-                    </div>
-                    <!-- Calculador interactivo con variables reales del laboratorio -->
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 space-y-1 text-xs">
-                        <div class="text-slate-400 font-semibold mb-1">Sustitución en Vivo del Simulador:</div>
-                        <div id="theory-calc-ptotal" class="font-mono text-slate-200">
-                            P<sub>total</sub> = 0.00 atm + 0.00 atm + 0.00 atm = 0.00 atm
-                        </div>
-                    </div>
-                </div>
+          <div id="exercises-container" class="exercise-grid-2 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+            <!-- Exercises rendered here -->
+          </div>
+        </div>
 
-                <!-- Tarjeta 2: Fracción Molar -->
-                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
-                            <i class="fa-solid fa-pie-chart text-lg"></i>
-                        </div>
-                        <h3 class="font-bold text-slate-200">2. Fracción Molar (X<sub>i</sub>)</h3>
-                    </div>
-                    <p class="text-xs text-slate-400 leading-relaxed">
-                        Representa la proporción adimensional de moles de un gas específico respecto al número total de moles en la mezcla.
-                    </p>
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono text-amber-300 text-lg font-bold">
-                        X<sub>i</sub> = n<sub>i</sub> / n<sub>total</sub>
-                    </div>
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 space-y-1 text-xs font-mono text-slate-200" id="theory-calc-molar">
-                        X<sub>N<sub>2</sub></sub> = 0.60 mol / 1.20 mol = 0.500
-                    </div>
-                </div>
+        <footer class="mt-12 pt-4 border-t border-slate-200 text-xs text-slate-400 flex justify-between items-center">
+          <span>Creado por <strong>[Julio T. P.]</strong> · Generador de Operaciones Combinadas</span>
+          <span>Página <span class="print-page-num">1</span></span>
+        </footer>
+
+      </section>
+
+      <!-- VIEW 2: INTERACTIVE SELF-ASSESSMENT MODE -->
+      <section id="interactive-view" class="hidden flex-col gap-6">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800">Modo Práctica Interactivo</h2>
+            <p class="text-sm text-slate-500">Resuelve cada operación, ingresa la fracción simplificada y comprueba al instante.</p>
+          </div>
+
+          <div class="flex items-center gap-4 bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200">
+            <div class="text-center">
+              <div id="interactive-score" class="text-2xl font-black text-indigo-600">0 / 0</div>
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Resueltos</div>
             </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <button onclick="checkAllInteractiveAnswers()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-check-double"></i> Comprobar Todos
+            </button>
+          </div>
+        </div>
 
-            <!-- Demostración del Comportamiento Ideal -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
-                <h3 class="font-bold text-slate-200 flex items-center gap-2">
-                    <i class="fa-solid fa-diagram-project text-indigo-400"></i>
-                    Relación Directa: Presión Parcial y Fracción Molar
-                </h3>
-                <p class="text-sm text-slate-300 leading-relaxed">
-                    Multiplicando la fracción molar por la presión total del sistema obtenemos la presión parcial directa de cualquier gas individual:
-                </p>
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center font-mono text-emerald-400 text-xl font-black">
-                    P<sub>i</sub> = X<sub>i</sub> · P<sub>total</sub>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                    <div class="bg-blue-950/30 border border-blue-500/30 p-3 rounded-xl text-xs font-mono space-y-1">
-                        <span class="text-blue-400 font-bold block">Nitrógeno (N<sub>2</sub>):</span>
-                        <span id="theory-calc-pn2" class="text-slate-300">P<sub>N<sub>2</sub></sub> = 0.50 × P<sub>total</sub></span>
-                    </div>
-                    <div class="bg-red-950/30 border border-red-500/30 p-3 rounded-xl text-xs font-mono space-y-1">
-                        <span class="text-red-400 font-bold block">Oxígeno (O<sub>2</sub>):</span>
-                        <span id="theory-calc-po2" class="text-slate-300">P<sub>O<sub>2</sub></sub> = 0.33 × P<sub>total</sub></span>
-                    </div>
-                    <div class="bg-emerald-950/30 border border-emerald-500/30 p-3 rounded-xl text-xs font-mono space-y-1">
-                        <span class="text-emerald-400 font-bold block">Argón (Ar):</span>
-                        <span id="theory-calc-par" class="text-slate-300">P<sub>Ar</sub> = 0.17 × P<sub>total</sub></span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= PESTAÑA 3: DESAFÍOS Y EJERCICIOS ================= -->
-        <section id="tab-quiz" class="hidden space-y-6">
-            
-            <!-- Marcador y Nivel de Dominio -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 glow-box">
-                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="p-2 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
-                                <i class="fa-solid fa-trophy text-lg"></i>
-                            </span>
-                            <h2 class="text-xl font-bold text-white">Desafíos Aplicados & Problemas Reales</h2>
-                        </div>
-                        <p class="text-slate-400 text-xs sm:text-sm">
-                            Aplica la Ley de Dalton en medicina, ingeniería aeroespacial, buceo técnico y termodinámica química.
-                        </p>
-                    </div>
-
-                    <div class="w-full md:w-auto bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between md:justify-end gap-5">
-                        <div>
-                            <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">Nivel de Dominio:</span>
-                            <span id="quiz-rank-badge" class="text-sm font-bold text-amber-400 font-mono">🔰 Novato</span>
-                        </div>
-                        <div class="text-right border-l border-slate-800 pl-4">
-                            <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">Puntuación:</span>
-                            <span id="quiz-score-pts" class="text-base font-extrabold font-mono text-indigo-300">0 / 175 pts</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Barra de Progreso General -->
-                <div class="space-y-1.5 pt-1">
-                    <div class="flex justify-between text-xs text-slate-400 font-medium">
-                        <span>Progreso de Solución (<span id="quiz-solved-count">0 / 10</span> completados)</span>
-                        <span>Avance de Nivel</span>
-                    </div>
-                    <div class="h-2.5 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800">
-                        <div id="quiz-progress-bar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-400 h-full transition-all duration-500" style="width: 0%;"></div>
-                    </div>
-                </div>
-
-                <!-- Filtros Interactivos por Dificultad -->
-                <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-4">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-1">Filtrar por Dificultad:</span>
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <button id="quiz-filter-all" onclick="filterQuiz('all')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-md border border-indigo-400/30">
-                            Todos (10)
-                        </button>
-                        <button id="quiz-filter-facil" onclick="filterQuiz('facil')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700/50">
-                            🟢 Fácil (2)
-                        </button>
-                        <button id="quiz-filter-intermedio" onclick="filterQuiz('intermedio')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700/50">
-                            🟡 Intermedio (3)
-                        </button>
-                        <button id="quiz-filter-avanzado" onclick="filterQuiz('avanzado')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700/50">
-                            🔴 Avanzado (3)
-                        </button>
-                        <button id="quiz-filter-master" onclick="filterQuiz('master')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700/50">
-                            🟣 Desafío Máster (2)
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contenedor Dinámico de Preguntas -->
-            <div class="space-y-4" id="quiz-container">
-                <!-- Se renderizan dinámicamente los 10 desafíos enriquecidos -->
-            </div>
-        </section>
+        <div id="interactive-cards-container" class="space-y-4">
+          <!-- Interactive cards rendered here -->
+        </div>
+      </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-800/80 bg-slate-900/50 py-4 text-center text-xs text-slate-400 mt-8">
-        <p>Simulador Educativo de Química General • Ley de las Presiones Parciales de Dalton • Julio T. P.</p>
-    </footer>
+  </div>
 
-    <script>
-        /* Configuración de Estado de la Mezcla de Gases */
-        const state = {
-            N2: 0.60,     // Moles de Nitrógeno
-            O2: 0.40,     // Moles de Oxígeno
-            Ar: 0.20,     // Moles de Argón
-            volume: 22.4, // Litros
-            temp: 273,    // Kelvin
-            activeFilter: 'all', // 'all', 'N2', 'O2', 'Ar'
-            particles: [],
-            R: 0.08206    // Constante universal de gases ideales (L atm / mol K)
+  <!-- Step-by-Step Resolution Modal -->
+  <div id="step-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-all">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden transform transition-all scale-100">
+      
+      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 font-bold">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 id="step-modal-title" class="font-bold text-base sm:text-lg text-slate-100">Solución Paso a Paso</h3>
+            <p class="text-xs text-slate-400">Desglose detallado con jerarquía de operaciones y m.c.m.</p>
+          </div>
+        </div>
+        <button onclick="closeStepModal()" class="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+      
+      <div id="step-modal-content" class="p-6 overflow-y-auto space-y-5 text-slate-800 bg-slate-50/50">
+        <!-- Content inserted dynamically -->
+      </div>
+
+      <div class="p-4 bg-white border-t border-slate-200 flex justify-between items-center">
+        <span class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-shield-halved text-emerald-500 mr-1"></i> Resultado verificado matemáticamente</span>
+        <button onclick="closeStepModal()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all">
+          Entendido, cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    class Fraction {
+      constructor(n, d = 1) {
+        if (d === 0) throw new Error("Denominator cannot be 0");
+        if (d < 0) { n = -n; d = -d; }
+        const g = Fraction.gcd(Math.abs(n), Math.abs(d));
+        this.n = Math.round(n / (g || 1));
+        this.d = Math.round(d / (g || 1));
+      }
+
+      static gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+          let t = b;
+          b = a % b;
+          a = t;
+        }
+        return a;
+      }
+
+      static lcm(a, b) {
+        if (a === 0 || b === 0) return 0;
+        return Math.abs((a * b) / Fraction.gcd(a, b));
+      }
+
+      add(f) { return new Fraction(this.n * f.d + f.n * this.d, this.d * f.d); }
+      sub(f) { return new Fraction(this.n * f.d - f.n * this.d, this.d * f.d); }
+      mul(f) { return new Fraction(this.n * f.n, this.d * f.d); }
+      div(f) { return new Fraction(this.n * f.d, this.d * f.n); }
+
+      equals(f) { return this.n === f.n && this.d === f.d; }
+
+      toTex() {
+        if (this.d === 1) return `${this.n}`;
+        if (this.n < 0) return `-\\frac{${-this.n}}{${this.d}}`;
+        return `\\frac{${this.n}}{${this.d}}`;
+      }
+
+      toSolucString() {
+        if (this.d === 1) return `${this.n}`;
+        return `${this.n}/${this.d}`;
+      }
+    }
+
+    function safeRenderTex(containerElement, rawTex, isDisplay = false) {
+      if (!containerElement) return;
+      containerElement.innerHTML = '';
+      try {
+        let cleanTex = rawTex.trim();
+        cleanTex = cleanTex.replace(/^\$+|\$+$/g, '');
+        
+        katex.render(cleanTex, containerElement, {
+          displayMode: isDisplay,
+          throwOnError: false
+        });
+      } catch (e) {
+        containerElement.innerText = rawTex;
+      }
+    }
+
+    // ORIGINAL PDF EXERCISES
+    const PRESET_PDF_EXERCISES = [
+      {
+        id: 'a',
+        tex: '\\frac{2}{3}+\\left[1-\\left(\\frac{3}{4}-\\frac{1}{6}\\right)\\right]=',
+        solucStr: '13/12',
+        targetFrac: new Fraction(13, 12),
+        steps: [
+          { title: "1. Resolver el paréntesis interior", desc: "Calculamos m.c.m.(4, 6) = 12:", math: "\\frac{3}{4} - \\frac{1}{6} = \\frac{9}{12} - \\frac{2}{12} = \\frac{7}{12}" },
+          { title: "2. Operar dentro del corchete", desc: "Restamos desde el número entero 1:", math: "1 - \\frac{7}{12} = \\frac{12}{12} - \\frac{7}{12} = \\frac{5}{12}" },
+          { title: "3. Suma final exterior", desc: "Sumamos con m.c.m.(3, 12) = 12:", math: "\\frac{2}{3} + \\frac{5}{12} = \\frac{8}{12} + \\frac{5}{12} = \\frac{13}{12}" }
+        ]
+      },
+      {
+        id: 'b',
+        tex: '\\frac{4}{5}-\\frac{7}{3}\\cdot\\frac{3}{7}+\\frac{1}{5}\\cdot\\left(2+\\frac{1}{2}\\right)-\\frac{7}{3}+4:\\frac{6}{5}=',
+        solucStr: '13/10',
+        targetFrac: new Fraction(13, 10),
+        steps: [
+          { title: "1. Paréntesis prioritario", desc: "Sumamos entero y fracción:", math: "2 + \\frac{1}{2} = \\frac{5}{2}" },
+          { title: "2. Multiplicaciones y divisiones", desc: "Operamos en orden:", math: "\\frac{7}{3} \\cdot \\frac{3}{7} = 1, \\quad \\frac{1}{5} \\cdot \\frac{5}{2} = \\frac{1}{2}, \\quad 4 : \\frac{6}{5} = \\frac{10}{3}" },
+          { title: "3. Sumas y restas con m.c.m. = 30", desc: "Calculamos el resultado:", math: "\\frac{4}{5} - 1 + \\frac{1}{2} - \\frac{7}{3} + \\frac{10}{3} = \\frac{13}{10}" }
+        ]
+      },
+      {
+        id: 'c',
+        tex: '\\frac{2}{3}+\\frac{5}{4}\\cdot\\left(\\frac{3}{5}+\\frac{4}{10}\\right)-\\frac{5}{4}+\\left(\\frac{3}{5}:4\\right)+\\frac{12}{5}=',
+        solucStr: '193/60',
+        targetFrac: new Fraction(193, 60),
+        steps: [
+          { title: "1. Resolver ambos paréntesis", desc: "Calculamos:", math: "\\frac{3}{5} + \\frac{4}{10} = 1 \\quad \\text{y} \\quad \\frac{3}{5} : 4 = \\frac{3}{20}" },
+          { title: "2. Suma final", desc: "Operamos con m.c.m.(3, 20, 5) = 60:", math: "\\frac{2}{3} + \\frac{3}{20} + \\frac{12}{5} = \\frac{193}{60}" }
+        ]
+      },
+      {
+        id: 'd',
+        tex: '2+\\frac{1}{5}:\\left(2+\\frac{7}{3}-\\frac{2}{4}+\\frac{5}{3}\\right)=',
+        solucStr: '112/55',
+        targetFrac: new Fraction(112, 55),
+        steps: [
+          { title: "1. Paréntesis", desc: "Calculamos el paréntesis interno:", math: "2 + \\frac{7}{3} - \\frac{1}{2} + \\frac{5}{3} = \\frac{11}{2}" },
+          { title: "2. División y suma", desc: "Operamos:", math: "\\frac{1}{5} : \\frac{11}{2} = \\frac{2}{55} \\implies 2 + \\frac{2}{55} = \\frac{112}{55}" }
+        ]
+      },
+      {
+        id: 'e',
+        tex: '\\left(\\frac{2}{7}-\\frac{4}{5}+\\frac{2}{8}\\right)\\cdot\\frac{3}{2}-\\frac{7}{5}:\\frac{4}{7}=',
+        solucStr: '-797/280',
+        targetFrac: new Fraction(-797, 280),
+        steps: [
+          { title: "1. Paréntesis con m.c.m. = 140", desc: "Calculamos la suma:", math: "\\frac{2}{7} - \\frac{4}{5} + \\frac{1}{4} = -\\frac{37}{140}" },
+          { title: "2. Operaciones finales", desc: "Multiplicamos y restamos:", math: "-\\frac{111}{280} - \\frac{49}{20} = -\\frac{797}{280}" }
+        ]
+      },
+      {
+        id: 'f',
+        tex: '\\frac{17}{9}-\\frac{15}{5}+\\frac{4}{3}:\\left(\\frac{1}{5}+\\frac{2}{3}\\cdot\\frac{1}{15}\\right)+\\frac{14}{3}:\\frac{16}{8}=',
+        solucStr: '26/9',
+        targetFrac: new Fraction(26, 9),
+        steps: [
+          { title: "1. Jerarquía interna", desc: "Multiplicamos dentro del paréntesis:", math: "\\frac{1}{5} + \\frac{2}{45} = \\frac{11}{45}" },
+          { title: "2. Divisiones y resultado", desc: "Operamos los bloques:", math: "\\frac{17}{9} - 3 + \\frac{60}{11} + \\frac{7}{3} = \\frac{26}{9}" }
+        ]
+      },
+      {
+        id: 'g',
+        tex: '\\frac{21}{5}+\\frac{15}{4}\\cdot\\frac{16}{3}-\\frac{15}{30}+\\frac{12}{4}:\\frac{5}{4}+3=',
+        solucStr: '291/10',
+        targetFrac: new Fraction(291, 10),
+        steps: [
+          { title: "1. Productos y divisiones", desc: "Calculamos los bloques prioritarios:", math: "\\frac{15}{4} \\cdot \\frac{16}{3} = 20 \\quad \\text{y} \\quad 3 : \\frac{5}{4} = \\frac{12}{5}" },
+          { title: "2. Suma final", desc: "Operamos con m.c.m.(5, 2) = 10:", math: "\\frac{21}{5} + 20 - \\frac{1}{2} + \\frac{12}{5} + 3 = \\frac{291}{10}" }
+        ]
+      },
+      {
+        id: 'h',
+        tex: '\\frac{2}{3}-\\left[\\frac{3}{2}-\\frac{1}{5}-\\left(\\frac{2}{5}-\\frac{1}{3}\\right)+\\left(\\frac{6}{5}-\\frac{1}{2}\\right)\\right]-\\frac{3}{4}+\\left(\\frac{1}{2}-\\frac{1}{3}\\right)=',
+        solucStr: '-37/20',
+        targetFrac: new Fraction(-37, 20),
+        steps: [
+          { title: "1. Paréntesis interiores", desc: "Calculamos los 3 paréntesis:", math: "\\left(\\frac{2}{5}-\\frac{1}{3}\\right) = \\frac{1}{15}, \\quad \\left(\\frac{6}{5}-\\frac{1}{2}\\right) = \\frac{7}{10}, \\quad \\left(\\frac{1}{2}-\\frac{1}{3}\\right) = \\frac{1}{6}" },
+          { title: "2. Corchete y resta", desc: "Resultado:", math: "\\frac{2}{3} - \\frac{29}{15} - \\frac{3}{4} + \\frac{1}{6} = -\\frac{37}{20}" }
+        ]
+      },
+      {
+        id: 'i',
+        tex: '2-\\left[\\frac{4}{3}-\\left(\\frac{1}{2}+\\frac{2}{5}\\right)-\\frac{1}{3}\\right]-\\left(\\frac{4}{3}+2\\right)-\\frac{1}{5}=',
+        solucStr: '-49/30',
+        targetFrac: new Fraction(-49, 30),
+        steps: [
+          { title: "1. Paréntesis", desc: "Calculamos:", math: "\\left(\\frac{1}{2}+\\frac{2}{5}\\right) = \\frac{9}{10} \\quad \\text{y} \\quad \\left(\\frac{4}{3}+2\\right) = \\frac{10}{3}" },
+          { title: "2. Corchete y suma", desc: "Operamos:", math: "2 - \\frac{1}{10} - \\frac{10}{3} - \\frac{1}{5} = -\\frac{49}{30}" }
+        ]
+      },
+      {
+        id: 'j',
+        tex: '2+\\left(\\frac{5}{2}-3\\right)-\\left[\\frac{7}{10}-\\left(\\frac{2}{5}+\\frac{1}{4}\\right)\\right]=',
+        solucStr: '29/20',
+        targetFrac: new Fraction(29, 20),
+        steps: [
+          { title: "1. Paréntesis", desc: "Calculamos:", math: "\\left(\\frac{5}{2}-3\\right) = -\\frac{1}{2} \\quad \\text{y} \\quad \\left(\\frac{2}{5}+\\frac{1}{4}\\right) = \\frac{13}{20}" },
+          { title: "2. Corchete y resultado", desc: "Operamos:", math: "2 - \\frac{1}{2} - \\frac{1}{20} = \\frac{29}{20}" }
+        ]
+      },
+      {
+        id: 'k',
+        tex: '-\\frac{3}{8}+\\left(4-\\frac{1}{2}\\right)-\\left[\\left(2-\\frac{5}{4}\\right)+\\left(\\frac{7}{2}-\\frac{1}{8}\\right)\\right]=',
+        solucStr: '-1',
+        targetFrac: new Fraction(-1, 1),
+        steps: [
+          { title: "1. Paréntesis", desc: "Calculamos los 3 paréntesis:", math: "\\left(4-\\frac{1}{2}\\right) = \\frac{7}{2}, \\quad \\left(2-\\frac{5}{4}\\right) = \\frac{3}{4}, \\quad \\left(\\frac{7}{2}-\\frac{1}{8}\\right) = \\frac{27}{8}" },
+          { title: "2. Corchete y resultado", desc: "Operamos:", math: "-\\frac{3}{8} + \\frac{28}{8} - \\frac{33}{8} = -1" }
+        ]
+      },
+      {
+        id: 'l',
+        tex: '\\left(\\frac{4}{3}-\\frac{-1}{9}\\right)+\\left[2-\\left(-\\frac{5}{4}+\\frac{2}{3}\\right)\\right]-\\frac{7}{2}=',
+        solucStr: '19/36',
+        targetFrac: new Fraction(19, 36),
+        steps: [
+          { title: "1. Signos y paréntesis", desc: "Cambiamos signos dobles:", math: "\\frac{4}{3} + \\frac{1}{9} = \\frac{13}{9} \\quad \\text{y} \\quad -\\frac{5}{4} + \\frac{2}{3} = -\\frac{7}{12}" },
+          { title: "2. Corchete y suma", desc: "Operamos:", math: "\\frac{13}{9} + \\frac{31}{12} - \\frac{7}{2} = \\frac{19}{36}" }
+        ]
+      },
+      {
+        id: 'm',
+        tex: '\\left[\\left(\\frac{4}{6}+\\frac{17}{2}\\right):\\left(\\frac{4}{3}-\\frac{5}{12}\\right)\\right]\\cdot\\left(\\frac{1}{6}+\\frac{1}{15}\\right)=',
+        solucStr: '7/3',
+        targetFrac: new Fraction(7, 3),
+        steps: [
+          { title: "1. Paréntesis del corchete", desc: "Calculamos:", math: "\\left(\\frac{2}{3} + \\frac{17}{2}\\right) = \\frac{55}{6} \\quad \\text{y} \\quad \\left(\\frac{4}{3} - \\frac{5}{12}\\right) = \\frac{11}{12}" },
+          { title: "2. División y producto", desc: "Operamos:", math: "10 \\cdot \\frac{7}{30} = \\frac{7}{3}" }
+        ]
+      },
+      {
+        id: 'n',
+        tex: '\\left(\\frac{1}{3}-\\frac{4}{5}\\right)\\cdot\\left[\\left(\\frac{1}{3}-1\\right)\\cdot 3-\\frac{1+\\frac{2}{5}}{3}\\right]=',
+        solucStr: '259/225',
+        targetFrac: new Fraction(259, 225),
+        steps: [
+          { title: "1. Paréntesis y bloques", desc: "Calculamos:", math: "\\left(\\frac{1}{3}-1\\right) \\cdot 3 = -2 \\quad \\text{y} \\quad \\frac{7/5}{3} = \\frac{7}{15}" },
+          { title: "2. Producto final", desc: "Operamos:", math: "-\\frac{7}{15} \\cdot \\left(-\\frac{37}{15}\\right) = \\frac{259}{225}" }
+        ]
+      },
+      {
+        id: 'o',
+        tex: '\\frac{4}{5}:\\left[\\frac{12}{16}\\cdot\\left(\\frac{1}{6}+\\frac{2}{3}\\right)-\\frac{3}{8}\\right]-3\\cdot\\left[\\frac{1}{6}:\\left(1-\\frac{2}{5}\\right)\\right]=',
+        solucStr: '71/30',
+        targetFrac: new Fraction(71, 30),
+        steps: [
+          { title: "1. Primer término", desc: "Calculamos:", math: "\\frac{4}{5} : \\frac{1}{4} = \\frac{16}{5}" },
+          { title: "2. Segundo término y resta", desc: "Calculamos:", math: "\\frac{16}{5} - \\frac{5}{6} = \\frac{71}{30}" }
+        ]
+      },
+      {
+        id: 'p',
+        tex: '\\frac{3}{2}-\\frac{1}{2}\\cdot\\frac{4}{3}:\\left(\\frac{4}{3}-\\frac{2}{3}\\cdot\\frac{15}{8}+1\\right)=',
+        solucStr: '23/26',
+        targetFrac: new Fraction(23, 26),
+        steps: [
+          { title: "1. Paréntesis interno", desc: "Calculamos:", math: "\\frac{4}{3} - \\frac{5}{4} + 1 = \\frac{13}{12}" },
+          { title: "2. Operaciones exteriores", desc: "Operamos:", math: "\\frac{3}{2} - \\frac{8}{13} = \\frac{23}{26}" }
+        ]
+      }
+    ];
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRandomFraction(minN = 1, maxN = 9, minD = 2, maxD = 9) {
+      const n = getRandomInt(minN, maxN);
+      const d = getRandomInt(minD, maxD);
+      return new Fraction(n, d);
+    }
+
+    // ADVANCED GENERATOR WITH MULTIPLE STRUCTURE TEMPLATES & INTEGERS
+    function generateRandomExercise(difficulty = 'medium', index = 1) {
+      const letter = String.fromCharCode(96 + index);
+      let attempts = 0;
+
+      const limits = {
+        easy: { minN: 1, maxN: 9, minD: 2, maxD: 9 },
+        medium: { minN: 1, maxN: 9, minD: 2, maxD: 9 },
+        advanced: { minN: 1, maxN: 9, minD: 2, maxD: 9 },
+        expert: { minN: 10, maxN: 25, minD: 2, maxD: 15 }
+      }[difficulty];
+
+      while (attempts < 150) {
+        attempts++;
+        try {
+          // CATEGORY 1: EASY (Basic operations with integers & fractions)
+          if (difficulty === 'easy') {
+            const templateType = getRandomInt(1, 3);
+            
+            if (templateType === 1) { // Integer + Fraction : Fraction
+              const intVal = getRandomInt(1, 6);
+              const f1 = new Fraction(intVal, 1);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const op = Math.random() > 0.5 ? '+' : '-';
+
+              const divRes = f2.div(f3);
+              const res = op === '+' ? f1.add(divRes) : f1.sub(divRes);
+              if (res.n === 0) continue;
+
+              const tex = `${intVal} ${op} ${f2.toTex()} : ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Prioridad de división", desc: "Efectuamos primero la división de fracciones:", math: `${f2.toTex()} : ${f3.toTex()} = ${divRes.toTex()}` },
+                  { title: "2. Suma / Resta con el número entero", desc: "Operamos reduciendo a común denominador:", math: `${intVal} ${op} ${divRes.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else if (templateType === 2) { // Fraction * Fraction +/- Integer
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const intVal = getRandomInt(1, 5);
+              const op = Math.random() > 0.5 ? '+' : '-';
+
+              const mulRes = f1.mul(f2);
+              const res = op === '+' ? mulRes.add(new Fraction(intVal, 1)) : mulRes.sub(new Fraction(intVal, 1));
+              if (res.n === 0) continue;
+
+              const tex = `${f1.toTex()} \\cdot ${f2.toTex()} ${op} ${intVal}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Multiplicación prioritaria", desc: "Multiplicamos numeradores y denominadores:", math: `${f1.toTex()} \\cdot ${f2.toTex()} = ${mulRes.toTex()}` },
+                  { title: "2. Operación con entero", desc: "Convertimos el entero a fracción con denominador común:", math: `${mulRes.toTex()} ${op} ${intVal} = ${res.toTex()}` }
+                ]
+              };
+            } else { // Sum of 3 fractions/integers
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              
+              const res = f1.add(f2).sub(f3);
+              if (res.n === 0) continue;
+
+              const tex = `${f1.toTex()} + ${f2.toTex()} - ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Mínimo común múltiplo", desc: `Hallamos el m.c.m. de los denominadores (${f1.d}, ${f2.d}, ${f3.d}):`, math: `\\text{m.c.m.} = ${Fraction.lcm(f1.d, Fraction.lcm(f2.d, f3.d))}` },
+                  { title: "2. Suma y simplificación", desc: "Sumamos numeradores y simplificamos:", math: `${res.toTex()}` }
+                ]
+              };
+            }
+          } 
+          
+          // CATEGORY 2: MEDIUM (Parentheses with mixed operations and integers)
+          else if (difficulty === 'medium') {
+            const templateType = getRandomInt(1, 3);
+
+            if (templateType === 1) { // Example: 3 + 4/3 : ( 2 + 2 - 1/9 )
+              const a = getRandomInt(1, 5);
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const b = getRandomInt(1, 4);
+              const c = getRandomInt(1, 4);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const innerPar = (new Fraction(b, 1)).add(new Fraction(c, 1)).sub(f2);
+              if (innerPar.n === 0) continue;
+
+              const divRes = f1.div(innerPar);
+              const res = (new Fraction(a, 1)).add(divRes);
+
+              const tex = `${a} + ${f1.toTex()} : \\left( ${b} + ${c} - ${f2.toTex()} \\right)=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver el paréntesis", desc: "Sumamos los enteros y restamos la fracción dentro del paréntesis:", math: `${b} + ${c} - ${f2.toTex()} = ${innerPar.toTex()}` },
+                  { title: "2. División prioritaria", desc: "Dividimos la fracción entre el resultado del paréntesis:", math: `${f1.toTex()} : ${innerPar.toTex()} = ${divRes.toTex()}` },
+                  { title: "3. Suma final con el entero", desc: "Sumamos al entero inicial:", math: `${a} + ${divRes.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else if (templateType === 2) { // (a/b + c) * (d - e/f)
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const int1 = getRandomInt(1, 4);
+              const int2 = getRandomInt(2, 5);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const par1 = f1.add(new Fraction(int1, 1));
+              const par2 = (new Fraction(int2, 1)).sub(f2);
+              if (par2.n <= 0) continue;
+
+              const res = par1.mul(par2);
+
+              const tex = `\\left( ${f1.toTex()} + ${int1} \\right) \\cdot \\left( ${int2} - ${f2.toTex()} \\right)=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver primer paréntesis", desc: "Sumamos la fracción y el número entero:", math: `${f1.toTex()} + ${int1} = ${par1.toTex()}` },
+                  { title: "2. Resolver segundo paréntesis", desc: "Restamos el entero menos la fracción:", math: `${int2} - ${f2.toTex()} = ${par2.toTex()}` },
+                  { title: "3. Producto de ambos resultados", desc: "Multiplicamos ambos paréntesis:", math: `${par1.toTex()} \\cdot ${par2.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else { // a/b : ( c/d - e ) + f/g
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const int1 = getRandomInt(1, 3);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const par = f2.sub(new Fraction(int1, 1));
+              if (par.n === 0) continue;
+
+              const div = f1.div(par);
+              const res = div.add(f3);
+
+              const tex = `${f1.toTex()} : \\left( ${f2.toTex()} - ${int1} \\right) + ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver el paréntesis", desc: "Restamos la fracción y el entero:", math: `${f2.toTex()} - ${int1} = ${par.toTex()}` },
+                  { title: "2. Efectuar la división", desc: "Dividimos por la fracción resultante:", math: `${f1.toTex()} : ${par.toTex()} = ${div.toTex()}` },
+                  { title: "3. Suma final", desc: "Sumamos la última fracción con m.c.m.:", math: `${div.toTex()} + ${f3.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            }
+          } 
+          
+          // CATEGORY 3: ADVANCED & EXPERT (Brackets [...], nested structures, powers)
+          else {
+            const templateType = getRandomInt(1, 3);
+
+            if (templateType === 1 && difficulty === 'expert') { // Includes Power (a/b)^2
+              const f1 = getRandomFraction(2, 5, 2, 5);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const intVal = getRandomInt(1, 4);
+
+              const powRes = new Fraction(f1.n * f1.n, f1.d * f1.d);
+              const bracket = (new Fraction(intVal, 1)).sub(f2);
+              if (bracket.n === 0) continue;
+
+              const res = powRes.add(bracket);
+
+              const tex = `\\left( ${f1.toTex()} \\right)^2 + \\left[ ${intVal} - ${f2.toTex()} \\right]=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Calcular la potencia", desc: "Elevamos al cuadrado numerador y denominador:", math: `\\left( ${f1.toTex()} \\right)^2 = ${powRes.toTex()}` },
+                  { title: "2. Operar el corchete", desc: "Restamos dentro del corchete:", math: `${intVal} - ${f2.toTex()} = ${bracket.toTex()}` },
+                  { title: "3. Suma final", desc: "Sumamos ambos resultados:", math: `${powRes.toTex()} + ${bracket.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else if (templateType === 2) { // a - [ b/c : ( d/e + f ) ]
+              const int1 = getRandomInt(1, 5);
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const int2 = getRandomInt(1, 3);
+
+              const par = f2.add(new Fraction(int2, 1));
+              const bracket = f1.div(par);
+              const res = (new Fraction(int1, 1)).sub(bracket);
+
+              const tex = `${int1} - \\left[ ${f1.toTex()} : \\left( ${f2.toTex()} + ${int2} \\right) \\right]=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Resolver paréntesis interior", desc: "Sumamos la fracción con el número entero:", math: `${f2.toTex()} + ${int2} = ${par.toTex()}` },
+                  { title: "2. Resolver la división del corchete", desc: "Dividimos dentro del corchete:", math: `${f1.toTex()} : ${par.toTex()} = ${bracket.toTex()}` },
+                  { title: "3. Resta del entero exterior", desc: "Restamos al entero principal:", math: `${int1} - ${bracket.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            } else { // [ (a/b - c) * d/e ] : f/g
+              const f1 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const intVal = getRandomInt(1, 3);
+              const f2 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+              const f3 = getRandomFraction(limits.minN, limits.maxN, limits.minD, limits.maxD);
+
+              const par = f1.sub(new Fraction(intVal, 1));
+              if (par.n === 0) continue;
+
+              const bracket = par.mul(f2);
+              if (bracket.n === 0) continue;
+
+              const res = bracket.div(f3);
+
+              const tex = `\\left[ \\left( ${f1.toTex()} - ${intVal} \\right) \\cdot ${f2.toTex()} \\right] : ${f3.toTex()}=`;
+              return {
+                id: letter,
+                tex: tex,
+                solucStr: res.toSolucString(),
+                targetFrac: res,
+                steps: [
+                  { title: "1. Paréntesis interior", desc: "Calculamos la resta con el entero:", math: `${f1.toTex()} - ${intVal} = ${par.toTex()}` },
+                  { title: "2. Multiplicación del corchete", desc: "Multiplicamos por la fracción intermedia:", math: `${par.toTex()} \\cdot ${f2.toTex()} = ${bracket.toTex()}` },
+                  { title: "3. División final exterior", desc: "Dividimos entre la última fracción:", math: `${bracket.toTex()} : ${f3.toTex()} = ${res.toTex()}` }
+                ]
+              };
+            }
+          }
+        } catch (e) {
+          // Retry on zero division
+        }
+      }
+      return PRESET_PDF_EXERCISES[0];
+    }
+
+    let currentSource = 'preset';
+    let currentExercises = [...PRESET_PDF_EXERCISES];
+    let currentView = 'worksheet';
+    let showSolutions = true;
+    let gridColumns = 2;
+    let interactiveState = {};
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderWorksheet();
+      renderInteractiveView();
+    });
+
+    function loadPresetPDF() {
+      currentSource = 'preset';
+      currentExercises = [...PRESET_PDF_EXERCISES];
+      
+      document.getElementById('btn-load-preset').className = "w-full text-left p-3 rounded-xl border-2 border-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 transition-all flex items-start gap-3 group";
+      document.getElementById('btn-load-random').className = "w-full text-left p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-start gap-3 group";
+      document.getElementById('random-settings-panel').classList.add('opacity-75');
+
+      showToast("Ficha PDF Original cargada (16 ejercicios)");
+      refreshAllViews();
+    }
+
+    function generateRandomSet() {
+      currentSource = 'random';
+      document.getElementById('btn-load-preset').className = "w-full text-left p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all flex items-start gap-3 group";
+      document.getElementById('btn-load-random').className = "w-full text-left p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 transition-all flex items-start gap-3 group";
+      document.getElementById('random-settings-panel').classList.remove('opacity-75');
+
+      regenerateCurrentSet();
+    }
+
+    function regenerateCurrentSet() {
+      if (currentSource === 'preset') {
+        currentExercises = [...PRESET_PDF_EXERCISES];
+      } else {
+        const count = parseInt(document.getElementById('exercise-count').value);
+        const diff = document.getElementById('difficulty-level').value;
+        const newSet = [];
+        for (let i = 1; i <= count; i++) {
+          newSet.push(generateRandomExercise(diff, i));
+        }
+        currentExercises = newSet;
+      }
+      interactiveState = {};
+      showToast("Ejercicios actualizados correctamente");
+      refreshAllViews();
+    }
+
+    function onSettingsChanged() {
+      if (currentSource === 'random') {
+        regenerateCurrentSet();
+      }
+    }
+
+    function refreshAllViews() {
+      renderWorksheet();
+      renderInteractiveView();
+    }
+
+    function switchView(view) {
+      currentView = view;
+      const wsBtn = document.getElementById('tab-worksheet-btn');
+      const intBtn = document.getElementById('tab-interactive-btn');
+      const wsSec = document.getElementById('worksheet-view');
+      const intSec = document.getElementById('interactive-view');
+
+      if (view === 'worksheet') {
+        wsBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-indigo-600 text-white shadow";
+        intBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white";
+        wsSec.classList.remove('hidden');
+        intSec.classList.add('hidden');
+      } else {
+        intBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-indigo-600 text-white shadow";
+        wsBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white";
+        intSec.classList.remove('hidden');
+        intSec.classList.add('flex');
+        wsSec.classList.add('hidden');
+      }
+    }
+
+    function toggleSolutions(visible) {
+      showSolutions = visible;
+      renderWorksheet();
+    }
+
+    function setGridColumns(cols) {
+      gridColumns = cols;
+      const btn1 = document.getElementById('col-1-btn');
+      const btn2 = document.getElementById('col-2-btn');
+      const container = document.getElementById('exercises-container');
+
+      if (cols === 1) {
+        btn1.className = "py-1.5 px-3 border-2 border-indigo-600 bg-indigo-50 rounded-xl text-xs font-semibold text-indigo-700";
+        btn2.className = "py-1.5 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50";
+        container.className = "exercise-grid-1 grid grid-cols-1 gap-y-6";
+      } else {
+        btn2.className = "py-1.5 px-3 border-2 border-indigo-600 bg-indigo-50 rounded-xl text-xs font-semibold text-indigo-700";
+        btn1.className = "py-1.5 px-3 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50";
+        container.className = "exercise-grid-2 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8";
+      }
+    }
+
+    function updateHeaderDetails() {
+      const titleVal = document.getElementById('doc-title-input').value;
+      const courseVal = document.getElementById('doc-course-input').value;
+      document.getElementById('header-doc-title').innerText = titleVal || "Operaciones combinadas con fracciones";
+      document.getElementById('header-doc-course').innerText = courseVal || "Matemáticas";
+    }
+
+    function renderWorksheet() {
+      const container = document.getElementById('exercises-container');
+      container.innerHTML = '';
+
+      currentExercises.forEach((ex) => {
+        const item = document.createElement('div');
+        item.className = 'exercise-item flex flex-col justify-between p-3 rounded-xl transition-all hover:bg-slate-50/80 border border-transparent hover:border-slate-200';
+        
+        const topRow = document.createElement('div');
+        topRow.className = 'flex items-start justify-between gap-2';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'flex items-center gap-2 overflow-x-auto py-1';
+
+        const label = document.createElement('span');
+        label.className = 'font-bold text-slate-800 text-sm flex-shrink-0';
+        label.innerText = `${ex.id})`;
+
+        const mathContainer = document.createElement('div');
+        mathContainer.className = 'text-base text-slate-900';
+        safeRenderTex(mathContainer, ex.tex, false);
+
+        contentDiv.appendChild(label);
+        contentDiv.appendChild(mathContainer);
+        topRow.appendChild(contentDiv);
+
+        const stepTrigger = document.createElement('button');
+        stepTrigger.className = 'no-print text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 flex-shrink-0';
+        stepTrigger.innerHTML = '<i class="fa-solid fa-lightbulb text-amber-500"></i> Paso a Paso';
+        stepTrigger.onclick = () => openStepModal(ex.id);
+        topRow.appendChild(stepTrigger);
+
+        item.appendChild(topRow);
+
+        if (showSolutions) {
+          const solSpan = document.createElement('div');
+          solSpan.className = 'text-xs text-indigo-700 italic font-mono self-end mt-2 bg-indigo-50/80 px-2 py-0.5 rounded border border-indigo-100';
+          solSpan.innerText = `(Soluc: ${ex.solucStr})`;
+          item.appendChild(solSpan);
+        }
+
+        container.appendChild(item);
+      });
+    }
+
+    function renderInteractiveView() {
+      const container = document.getElementById('interactive-cards-container');
+      container.innerHTML = '';
+
+      currentExercises.forEach((ex) => {
+        const state = interactiveState[ex.id] || { status: 'pending', userNum: '', userDen: '' };
+
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-2xl p-5 border transition-all shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+          state.status === 'correct' ? 'border-emerald-300 bg-emerald-50/30' :
+          state.status === 'incorrect' ? 'border-rose-300 bg-rose-50/30' :
+          state.status === 'unsimplified' ? 'border-amber-300 bg-amber-50/30' : 'border-slate-200'
+        }`;
+
+        const left = document.createElement('div');
+        left.className = 'flex items-center gap-3 overflow-x-auto py-1';
+
+        const badge = document.createElement('span');
+        badge.className = 'w-8 h-8 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center flex-shrink-0 text-sm shadow-sm';
+        badge.innerText = ex.id;
+
+        const mathContainer = document.createElement('div');
+        mathContainer.className = 'text-lg';
+        safeRenderTex(mathContainer, ex.tex, false);
+
+        left.appendChild(badge);
+        left.appendChild(mathContainer);
+
+        const right = document.createElement('div');
+        right.className = 'flex items-center gap-3 flex-wrap md:flex-nowrap justify-end';
+
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-300';
+
+        const numInput = document.createElement('input');
+        numInput.type = 'number';
+        numInput.placeholder = 'Num';
+        numInput.value = state.userNum;
+        numInput.className = 'w-16 p-1.5 text-center text-sm font-semibold rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white';
+        numInput.oninput = (e) => {
+          if (!interactiveState[ex.id]) interactiveState[ex.id] = {};
+          interactiveState[ex.id].userNum = e.target.value;
         };
 
-        // Propiedades físico-químicas de las especies gaseosas
-        const SPECIES = {
-            N2: { color: '#3B82F6', lightColor: '#93C5FD', mass: 28, radius: 4.5, name: 'Nitrógeno (N₂)' },
-            O2: { color: '#EF4444', lightColor: '#FCA5A5', mass: 32, radius: 5.2, name: 'Oxígeno (O₂)' },
-            Ar: { color: '#10B981', lightColor: '#6EE7B7', mass: 40, radius: 6.0, name: 'Argón (Ar)' }
+        const divider = document.createElement('span');
+        divider.className = 'text-slate-400 font-bold text-lg';
+        divider.innerText = '/';
+
+        const denInput = document.createElement('input');
+        denInput.type = 'number';
+        denInput.placeholder = 'Den';
+        denInput.value = state.userDen;
+        denInput.className = 'w-16 p-1.5 text-center text-sm font-semibold rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white';
+        denInput.oninput = (e) => {
+          if (!interactiveState[ex.id]) interactiveState[ex.id] = {};
+          interactiveState[ex.id].userDen = e.target.value;
         };
 
-        let canvas, ctx;
+        inputGroup.appendChild(numInput);
+        inputGroup.appendChild(divider);
+        inputGroup.appendChild(denInput);
 
-        class Particle {
-            constructor(type) {
-                this.type = type;
-                this.props = SPECIES[type];
-                this.radius = this.props.radius;
-                
-                this.resetPosition();
-                this.initVelocity();
-            }
+        const checkBtn = document.createElement('button');
+        checkBtn.className = 'px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1';
+        checkBtn.innerHTML = '<i class="fa-solid fa-check"></i> Comprobar';
+        checkBtn.onclick = () => checkInteractiveAnswer(ex.id);
 
-            resetPosition() {
-                const canvasW = canvas.width;
-                const canvasH = canvas.height;
-                const pistonY = getPistonY();
+        const stepBtn = document.createElement('button');
+        stepBtn.className = 'px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5';
+        stepBtn.title = 'Ver solución paso a paso';
+        stepBtn.innerHTML = '<i class="fa-solid fa-lightbulb text-amber-500"></i> Paso a Paso';
+        stepBtn.onclick = () => openStepModal(ex.id);
 
-                this.x = this.radius + Math.random() * (canvasW - 2 * this.radius);
-                this.y = pistonY + this.radius + Math.random() * Math.max(10, canvasH - pistonY - 2 * this.radius);
-            }
+        right.appendChild(inputGroup);
+        right.appendChild(checkBtn);
+        right.appendChild(stepBtn);
 
-            initVelocity() {
-                const speedScale = Math.sqrt(state.temp / this.props.mass) * 0.35;
-                const angle = Math.random() * Math.PI * 2;
-                this.vx = Math.cos(angle) * speedScale;
-                this.vy = Math.sin(angle) * speedScale;
-            }
+        card.appendChild(left);
+        card.appendChild(right);
+        container.appendChild(card);
+      });
 
-            update(pistonY, width, height) {
-                const targetSpeed = Math.sqrt(state.temp / this.props.mass) * 0.35;
-                const currentSpeed = Math.hypot(this.vx, this.vy);
-                if (currentSpeed > 0) {
-                    this.vx = (this.vx / currentSpeed) * targetSpeed;
-                    this.vy = (this.vy / currentSpeed) * targetSpeed;
-                }
+      updateInteractiveScore();
+    }
 
-                this.x += this.vx;
-                this.y += this.vy;
+    function checkInteractiveAnswer(id) {
+      const ex = currentExercises.find(e => e.id === id);
+      if (!ex) return;
 
-                // Colisión con pared izquierda
-                if (this.x - this.radius <= 0) {
-                    this.x = this.radius;
-                    this.vx = Math.abs(this.vx);
-                } 
-                // Colisión con pared derecha
-                else if (this.x + this.radius >= width) {
-                    this.x = width - this.radius;
-                    this.vx = -Math.abs(this.vx);
-                }
+      const state = interactiveState[id] || {};
+      const num = parseInt(state.userNum);
+      const den = state.userDen === '' || state.userDen === undefined ? 1 : parseInt(state.userDen);
 
-                // Colisión con pared inferior
-                if (this.y + this.radius >= height) {
-                    this.y = height - this.radius;
-                    this.vy = -Math.abs(this.vy);
-                }
+      if (isNaN(num)) {
+        showToast("Ingresa un número en el numerador para comprobar", "warning");
+        return;
+      }
 
-                // Colisión con pistón móvil superior
-                if (this.y - this.radius <= pistonY) {
-                    this.y = pistonY + this.radius;
-                    this.vy = Math.abs(this.vy);
-                }
-            }
+      try {
+        const userFrac = new Fraction(num, den);
+        const targetFrac = ex.targetFrac;
 
-            draw(ctx, isHighlighted) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                
-                if (isHighlighted) {
-                    ctx.fillStyle = this.props.color;
-                    ctx.shadowColor = this.props.color;
-                    ctx.shadowBlur = 8;
-                    ctx.fill();
-                } else {
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-                    ctx.lineWidth = 1;
-                    ctx.shadowBlur = 0;
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                
-                ctx.restore();
-            }
+        if (userFrac.equals(targetFrac)) {
+          const userGcd = Fraction.gcd(Math.abs(num), Math.abs(den));
+          if (userGcd === 1) {
+            interactiveState[id].status = 'correct';
+            showToast(`¡Correcto! Ejercicio ${id}) resuelto impecablemente.`, "success");
+          } else {
+            interactiveState[id].status = 'unsimplified';
+            showToast(`¡Casi! El resultado es equivalente, pero simplifica dividiendo entre ${userGcd} → ${targetFrac.toSolucString()}`, "warning");
+          }
+        } else {
+          interactiveState[id].status = 'incorrect';
+          showToast(`Incorrecto en ejercicio ${id}). Revisa el paso a paso.`, "error");
         }
+      } catch (err) {
+        showToast("El denominador no puede ser cero", "error");
+      }
 
-        function getPistonY() {
-            const minVol = 10;
-            const maxVol = 45;
-            const minPistonY = 40;  // Pistón arriba (Volumen alto)
-            const maxPistonY = 250; // Pistón abajo (Volumen bajo)
+      renderInteractiveView();
+    }
 
-            const norm = (state.volume - minVol) / (maxVol - minVol);
-            return maxPistonY - norm * (maxPistonY - minPistonY);
+    function checkAllInteractiveAnswers() {
+      let correctCount = 0;
+      currentExercises.forEach(ex => {
+        const state = interactiveState[ex.id];
+        if (state && state.userNum !== '') {
+          checkInteractiveAnswer(ex.id);
+          if (interactiveState[ex.id]?.status === 'correct') {
+            correctCount++;
+          }
         }
+      });
 
-        function syncParticleCounts() {
-            const MOL_PER_PARTICLE = 0.02; // Cada esfera dibujada en pantalla representa 0.02 moles
-            const speciesList = ['N2', 'O2', 'Ar'];
-            
-            speciesList.forEach(type => {
-                const targetCount = Math.round(state[type] / MOL_PER_PARTICLE);
-                const currentList = state.particles.filter(p => p.type === type);
+      if (correctCount === currentExercises.length && currentExercises.length > 0) {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+      }
+    }
 
-                if (currentList.length < targetCount) {
-                    for (let i = 0; i < targetCount - currentList.length; i++) {
-                        state.particles.push(new Particle(type));
-                    }
-                } else if (currentList.length > targetCount) {
-                    let toRemove = currentList.length - targetCount;
-                    state.particles = state.particles.filter(p => {
-                        if (p.type === type && toRemove > 0) {
-                            toRemove--;
-                            return false;
-                        }
-                        return true;
-                    });
-                }
-            });
+    function updateInteractiveScore() {
+      let resolved = 0;
+      currentExercises.forEach(ex => {
+        if (interactiveState[ex.id]?.status === 'correct') {
+          resolved++;
         }
-
-        function handleParticleCollisions() {
-            const len = state.particles.length;
-            for (let i = 0; i < len; i++) {
-                for (let j = i + 1; j < len; j++) {
-                    const p1 = state.particles[i];
-                    const p2 = state.particles[j];
-
-                    const dx = p2.x - p1.x;
-                    const dy = p2.y - p1.y;
-                    const dist = Math.hypot(dx, dy);
-                    const minDist = p1.radius + p2.radius;
-
-                    if (dist < minDist && dist > 0) {
-                        const overlap = 0.5 * (minDist - dist);
-                        const nx = dx / dist;
-                        const ny = dy / dist;
-
-                        p1.x -= nx * overlap;
-                        p1.y -= ny * overlap;
-                        p2.x += nx * overlap;
-                        p2.y += ny * overlap;
-
-                        const kx = p1.vx - p2.vx;
-                        const ky = p1.vy - p2.vy;
-                        const p = 2 * (nx * kx + ny * ky) / (p1.props.mass + p2.props.mass);
-
-                        p1.vx -= p * p2.props.mass * nx;
-                        p1.vy -= p * p2.props.mass * ny;
-                        p2.vx += p * p1.props.mass * nx;
-                        p2.vy += p * p1.props.mass * ny;
-                    }
-                }
-            }
-        }
-
-        function renderSim() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const width = canvas.width;
-            const height = canvas.height;
-            const pistonY = getPistonY();
-
-            // Dibujar paredes del contenedor
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(2, 2, width - 4, height - 4);
-
-            // Dibujar pistón móvil
-            ctx.fillStyle = '#475569';
-            ctx.fillRect(4, pistonY - 16, width - 8, 16);
-            
-            // Mango del pistón
-            ctx.fillStyle = '#64748B';
-            ctx.fillRect(width / 2 - 20, 0, 40, pistonY - 16);
-
-            // Borde estético inferior del pistón
-            ctx.fillStyle = '#6366F1';
-            ctx.fillRect(4, pistonY - 4, width - 8, 4);
-
-            handleParticleCollisions();
-
-            state.particles.forEach(p => {
-                if (p.y - p.radius < pistonY) {
-                    p.y = pistonY + p.radius + 2;
-                    p.vy = Math.abs(p.vy);
-                }
-                p.update(pistonY, width, height);
-                
-                const isHighlighted = (state.activeFilter === 'all' || state.activeFilter === p.type);
-                p.draw(ctx, isHighlighted);
-            });
-
-            requestAnimationFrame(renderSim);
-        }
-
-        function updateCalculations() {
-            const nN2 = state.N2;
-            const nO2 = state.O2;
-            const nAr = state.Ar;
-            const nTotal = nN2 + nO2 + nAr;
-
-            // Fracciones molares X_i
-            const X_N2 = nTotal > 0 ? nN2 / nTotal : 0;
-            const X_O2 = nTotal > 0 ? nO2 / nTotal : 0;
-            const X_Ar = nTotal > 0 ? nAr / nTotal : 0;
-
-            // Presión Total con ley de gases ideales: P = (n_total * R * T) / V
-            const P_total = nTotal > 0 ? (nTotal * state.R * state.temp) / state.volume : 0;
-
-            // Presiones parciales con ley de Dalton: P_i = X_i * P_total
-            const P_N2 = X_N2 * P_total;
-            const P_O2 = X_O2 * P_total;
-            const P_Ar = X_Ar * P_total;
-
-            // Actualizar interfaz de usuario (Pestaña 1)
-            document.getElementById('stat-pn2').innerText = `${P_N2.toFixed(2)} atm`;
-            document.getElementById('stat-po2').innerText = `${P_O2.toFixed(2)} atm`;
-            document.getElementById('stat-par').innerText = `${P_Ar.toFixed(2)} atm`;
-            document.getElementById('stat-ptotal').innerText = `${P_total.toFixed(2)} atm`;
-
-            document.getElementById('frac-n2').innerText = `X = ${X_N2.toFixed(3)}`;
-            document.getElementById('frac-o2').innerText = `X = ${X_O2.toFixed(3)}`;
-            document.getElementById('frac-ar').innerText = `X = ${X_Ar.toFixed(3)}`;
-
-            document.getElementById('press-n2').innerText = `${P_N2.toFixed(2)} atm`;
-            document.getElementById('press-o2').innerText = `${P_O2.toFixed(2)} atm`;
-            document.getElementById('press-ar').innerText = `${P_Ar.toFixed(2)} atm`;
-
-            document.getElementById('pct-n2').innerText = `${(X_N2 * 100).toFixed(1)}% P_total`;
-            document.getElementById('pct-o2').innerText = `${(X_O2 * 100).toFixed(1)}% P_total`;
-            document.getElementById('pct-ar').innerText = `${(X_Ar * 100).toFixed(1)}% P_total`;
-
-            // Actualizar barras proporcionales
-            document.getElementById('bar-n2').style.width = `${X_N2 * 100}%`;
-            document.getElementById('bar-o2').style.width = `${X_O2 * 100}%`;
-            document.getElementById('bar-ar').style.width = `${X_Ar * 100}%`;
-
-            // Ecuación rápida inferior
-            document.getElementById('equation-sum-live').innerText = 
-                `${P_total.toFixed(2)} = ${P_N2.toFixed(2)} + ${P_O2.toFixed(2)} + ${P_Ar.toFixed(2)}`;
-
-            // Actualizar sustituciones teóricas con HTML nativo limpio (Pestaña 2)
-            document.getElementById('theory-calc-ptotal').innerHTML = 
-                `P<sub>total</sub> = ${P_N2.toFixed(2)} atm + ${P_O2.toFixed(2)} atm + ${P_Ar.toFixed(2)} atm = <b>${P_total.toFixed(2)} atm</b>`;
-
-            document.getElementById('theory-calc-molar').innerHTML = 
-                `X<sub>N<sub>2</sub></sub> = ${nN2.toFixed(2)} mol / ${nTotal.toFixed(2)} mol = <b>${X_N2.toFixed(3)}</b>`;
-
-            document.getElementById('theory-calc-pn2').innerHTML = `P<sub>N<sub>2</sub></sub> = ${X_N2.toFixed(3)} × ${P_total.toFixed(2)} atm = <b>${P_N2.toFixed(2)} atm</b>`;
-            document.getElementById('theory-calc-po2').innerHTML = `P<sub>O<sub>2</sub></sub> = ${X_O2.toFixed(3)} × ${P_total.toFixed(2)} atm = <b>${P_O2.toFixed(2)} atm</b>`;
-            document.getElementById('theory-calc-par').innerHTML = `P<sub>Ar</sub> = ${X_Ar.toFixed(3)} × ${P_total.toFixed(2)} atm = <b>${P_Ar.toFixed(2)} atm</b>`;
-        }
-
-        function bindControls() {
-            document.getElementById('slider-n2').addEventListener('input', (e) => {
-                state.N2 = parseFloat(e.target.value);
-                document.getElementById('val-n2').innerText = `${state.N2.toFixed(2)} mol`;
-                syncParticleCounts();
-                updateCalculations();
-            });
-
-            document.getElementById('slider-o2').addEventListener('input', (e) => {
-                state.O2 = parseFloat(e.target.value);
-                document.getElementById('val-o2').innerText = `${state.O2.toFixed(2)} mol`;
-                syncParticleCounts();
-                updateCalculations();
-            });
-
-            document.getElementById('slider-ar').addEventListener('input', (e) => {
-                state.Ar = parseFloat(e.target.value);
-                document.getElementById('val-ar').innerText = `${state.Ar.toFixed(2)} mol`;
-                syncParticleCounts();
-                updateCalculations();
-            });
-
-            document.getElementById('slider-vol').addEventListener('input', (e) => {
-                state.volume = parseFloat(e.target.value);
-                document.getElementById('val-vol').innerText = `${state.volume.toFixed(1)} L`;
-                updateCalculations();
-            });
-
-            document.getElementById('slider-temp').addEventListener('input', (e) => {
-                state.temp = parseInt(e.target.value);
-                const celsius = state.temp - 273;
-                document.getElementById('val-temp').innerText = `${state.temp} K (${celsius}°C)`;
-                updateCalculations();
-            });
-        }
-
-        function setGasFilter(filter) {
-            state.activeFilter = filter;
-            
-            const filters = ['all', 'N2', 'O2', 'Ar'];
-            filters.forEach(f => {
-                const btn = document.getElementById(`filter-${f}`);
-                if (f === filter) {
-                    btn.className = 'filter-btn text-xs py-2 px-3 rounded-lg border border-indigo-500 bg-indigo-600/30 text-indigo-200 font-medium transition-all shadow-sm';
-                } else {
-                    btn.className = 'filter-btn text-xs py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 font-medium hover:border-slate-600 transition-all';
-                }
-            });
-
-            const tagMap = {
-                all: 'Vista: Mezcla Completa',
-                N2: 'Vista: Solo Nitrógeno (N₂)',
-                O2: 'Vista: Solo Oxígeno (O₂)',
-                Ar: 'Vista: Solo Argón (Ar)'
-            };
-            document.getElementById('canvas-status-tag').innerText = tagMap[filter];
-        }
-
-        function resetLab() {
-            state.N2 = 0.60;
-            state.O2 = 0.40;
-            state.Ar = 0.20;
-            state.volume = 22.4;
-            state.temp = 273;
-            state.activeFilter = 'all';
-
-            document.getElementById('slider-n2').value = 0.60;
-            document.getElementById('slider-o2').value = 0.40;
-            document.getElementById('slider-ar').value = 0.20;
-            document.getElementById('slider-vol').value = 22.4;
-            document.getElementById('slider-temp').value = 273;
-
-            document.getElementById('val-n2').innerText = '0.60 mol';
-            document.getElementById('val-o2').innerText = '0.40 mol';
-            document.getElementById('val-ar').innerText = '0.20 mol';
-            document.getElementById('val-vol').innerText = '22.4 L';
-            document.getElementById('val-temp').innerText = '273 K (0°C)';
-
-            setGasFilter('all');
-            syncParticleCounts();
-            updateCalculations();
-        }
-
-        function switchTab(tab) {
-            const tabs = ['lab', 'theory', 'quiz'];
-            tabs.forEach(t => {
-                const content = document.getElementById(`tab-${t}`);
-                const btn = document.getElementById(`tab-btn-${t}`);
-                if (t === tab) {
-                    content.classList.remove('hidden');
-                    btn.className = 'px-4 py-2 rounded-lg transition-all flex items-center gap-2 bg-indigo-600 text-white shadow-md font-medium';
-                } else {
-                    content.classList.add('hidden');
-                    btn.className = 'px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-700/50 font-medium';
-                }
-            });
-        }
-
-        const quizResults = {};
-
-        const quizData = [
-            {
-                id: 1,
-                level: 'facil',
-                levelLabel: '🟢 Fácil',
-                levelClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-                pts: 10,
-                icon: 'fa-user-nurse',
-                context: 'Medicina Respiratoria',
-                title: 'Oxigenoterapia Heliox en Cuidados Intensivos',
-                questionHtml: 'Un paciente con obstrucción respiratoria grave recibe una mezcla gaseosa de <b>Heliox</b> compuesta por un <b>80% de Helio (He)</b> y un <b>20% de Oxígeno (O<sub>2</sub>)</b> en volumen. Si la mascarilla suministra la mezcla a una presión total de <b>1.05 atm</b> a nivel del mar, ¿cuál es la presión parcial del Helio (<b>P<sub>He</sub></b>)?',
-                unit: 'atm',
-                answer: 0.84,
-                tolerance: 0.02,
-                hintHtml: 'Aplica la relación de presión parcial según la fracción en volumen: <b>P<sub>He</sub> = X<sub>He</sub> × P<sub>total</sub></b>. Recuerda convertir el porcentaje a decimal (80% = 0.80).',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Identificar la fracción molar (o en volumen):</b><br>X<sub>He</sub> = 80% = 0.80</p>
-                        <p><b>Paso 2: Aplicar la Ley de Dalton:</b><br>P<sub>He</sub> = X<sub>He</sub> · P<sub>total</sub></p>
-                        <p><b>Paso 3: Sustituir los valores:</b><br>P<sub>He</sub> = 0.80 × 1.05 atm = <b>0.84 atm</b></p>
-                    </div>
-                `
-            },
-            {
-                id: 2,
-                level: 'facil',
-                levelLabel: '🟢 Fácil',
-                levelClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-                pts: 10,
-                icon: 'fa-screwdriver-wrench',
-                context: 'Metalurgia & Soldadura TIG',
-                title: 'Atmósfera Protectora de Argón-Helio',
-                questionHtml: 'En un taller aeroespacial se utiliza una antorcha de soldadura TIG con un gas inerte protector compuesto por <b>75% Argón (Ar)</b> y <b>25% Helio (He)</b>. Si el manómetro del regulador mide una presión total de <b>2.40 bar</b> en la línea de alimentación, ¿cuál es la presión parcial ejercida por el Argón (<b>P<sub>Ar</sub></b>)?',
-                unit: 'bar',
-                answer: 1.80,
-                tolerance: 0.02,
-                hintHtml: 'La presión parcial de un gas noble en la mezcla es igual a su fracción molar por la presión total: <b>P<sub>Ar</sub> = 0.75 × 2.40 bar</b>.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Fracción molar del Argón:</b><br>X<sub>Ar</sub> = 75 / 100 = 0.75</p>
-                        <p><b>Paso 2: Cálculo de presión parcial:</b><br>P<sub>Ar</sub> = X<sub>Ar</sub> · P<sub>total</sub> = 0.75 × 2.40 bar = <b>1.80 bar</b></p>
-                    </div>
-                `
-            },
-            {
-                id: 3,
-                level: 'intermedio',
-                levelLabel: '🟡 Intermedio',
-                levelClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-                pts: 15,
-                icon: 'fa-water',
-                context: 'Buceo Técnico Profundo',
-                title: 'Mezcla Trimix a 50m de Profundidad',
-                questionHtml: 'Un buzo explora un barco hundido a <b>50 metros</b> de profundidad, donde la presión ambiental es de <b>6.00 atm</b>. Respira una mezcla <b>Trimix 18/45</b> (<b>18% O<sub>2</sub></b>, <b>45% He</b> y <b>37% N<sub>2</sub></b>). Para prevenir la narcosis de nitrógeno, calcula la presión parcial del Nitrógeno (<b>P<sub>N<sub>2</sub></sub></b>) a esa profundidad.',
-                unit: 'atm',
-                answer: 2.22,
-                tolerance: 0.03,
-                hintHtml: 'Identifica el porcentaje de Nitrógeno (37% → 0.37) y multiplícalo por la presión ambiental hidrostática total de 6.00 atm.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Fracción molar de N<sub>2</sub>:</b><br>X<sub>N<sub>2</sub></sub> = 37% = 0.37</p>
-                        <p><b>Paso 2: Ley de Dalton a 6.00 atm:</b><br>P<sub>N<sub>2</sub></sub> = X<sub>N<sub>2</sub></sub> × P<sub>total</sub> = 0.37 × 6.00 atm = <b>2.22 atm</b></p>
-                        <p class="text-[11px] text-slate-400 italic">Nota fisiológica: Valores de P<sub>N<sub>2</sub></sub> superiores a 3.2 atm causan narcosis grave por nitrógeno ("efecto martini").</p>
-                    </div>
-                `
-            },
-            {
-                id: 4,
-                level: 'intermedio',
-                levelLabel: '🟡 Intermedio',
-                levelClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-                pts: 15,
-                icon: 'fa-mountain-sun',
-                context: 'Fisiología de Altitud',
-                title: 'Hipoxia Atmosférica en la Cima del Mt. Everest',
-                questionHtml: 'En la cumbre del Monte Everest (8,848 m), la presión barométrica cae a solo <b>0.330 atm</b>. Sabiendo que la proporción de Oxígeno en el aire seco se mantiene constante en un <b>21.0% (O<sub>2</sub>)</b>, ¿cuál es la presión parcial del Oxígeno (<b>P<sub>O<sub>2</sub></sub></b>) disponible en el aire ambiente?',
-                unit: 'atm',
-                answer: 0.0693,
-                tolerance: 0.005,
-                hintHtml: 'Multiplica la fracción molar del Oxígeno (0.21) por la presión atmosférica reducida de la cumbre (0.330 atm).',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Fracción molar del O<sub>2</sub>:</b><br>X<sub>O<sub>2</sub></sub> = 21.0% = 0.210</p>
-                        <p><b>Paso 2: Presión parcial en la cumbre:</b><br>P<sub>O<sub>2</sub></sub> = 0.210 × 0.330 atm = <b>0.0693 atm</b> (o ~52.7 mmHg)</p>
-                        <p class="text-[11px] text-slate-400 italic">A nivel del mar, P<sub>O<sub>2</sub></sub> es ~0.21 atm. ¡En el Everest es menos de un tercio!</p>
-                    </div>
-                `
-            },
-            {
-                id: 5,
-                level: 'intermedio',
-                levelLabel: '🟡 Intermedio',
-                levelClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-                pts: 15,
-                icon: 'fa-plane',
-                context: 'Ingeniería Aeronáutica',
-                title: 'Presurización de Cabina en Vuelo Comercial',
-                questionHtml: 'La cabina de un avión de pasajeros en crucero se presuriza a una presión total de <b>0.750 atm</b>. Un análisis del aire revela que en la cabina hay <b>1.50 moles de O<sub>2</sub></b>, <b>5.60 moles de N<sub>2</sub></b> y <b>0.08 moles de Ar</b>. ¿Cuál es la presión parcial del Oxígeno (<b>P<sub>O<sub>2</sub></sub></b>) que respiran los pasajeros?',
-                unit: 'atm',
-                answer: 0.157,
-                tolerance: 0.008,
-                hintHtml: 'Calcula primero los moles totales (n<sub>total</sub> = 1.50 + 5.60 + 0.08), luego halla X<sub>O<sub>2</sub></sub> = 1.50 / n<sub>total</sub>, y finalmente multiplica por 0.750 atm.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Moles totales de gas:</b><br>n<sub>total</sub> = 1.50 + 5.60 + 0.08 = 7.18 moles</p>
-                        <p><b>Paso 2: Fracción molar del O<sub>2</sub>:</b><br>X<sub>O<sub>2</sub></sub> = 1.50 / 7.18 = 0.2089</p>
-                        <p><b>Paso 3: Presión parcial de O<sub>2</sub>:</b><br>P<sub>O<sub>2</sub></sub> = 0.2089 × 0.750 atm = <b>0.1567 atm</b> (o 0.157 atm)</p>
-                    </div>
-                `
-            },
-            {
-                id: 6,
-                level: 'avanzado',
-                levelLabel: '🔴 Avanzado',
-                levelClass: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-                pts: 20,
-                icon: 'fa-vial',
-                context: 'Gasometría sobre Agua',
-                title: 'Recolección de H₂ sobre Agua y Presión de Vapor',
-                questionHtml: 'En un ensayo de corrosión ácida, se recolecta un volumen de gas Hidrógeno (H<sub>2</sub>) sobre agua a <b>25°C</b>. La presión barométrica total medida en la cubeta del laboratorio es de <b>1.013 atm</b>. Sabiendo que la presión de vapor saturado del agua a 25°C es de <b>0.0313 atm</b> (23.8 mmHg), ¿cuál es la presión parcial del gas Hidrógeno seco (<b>P<sub>H<sub>2</sub></sub></b>)?',
-                unit: 'atm',
-                answer: 0.9817,
-                tolerance: 0.01,
-                hintHtml: 'El gas recolectado es una mezcla de H<sub>2</sub> y vapor de H<sub>2</sub>O. Aplica: <b>P<sub>total</sub> = P<sub>H<sub>2</sub></sub> + P<sub>H<sub>2</sub>O</sub></b>.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Aplicar la corrección por humedad (Ley de Dalton):</b><br>P<sub>total</sub> = P<sub>H<sub>2</sub></sub> + P<sub>H<sub>2</sub>O</sub></p>
-                        <p><b>Paso 2: Despejar la presión del gas seco H<sub>2</sub>:</b><br>P<sub>H<sub>2</sub></sub> = P<sub>total</sub> - P<sub>H<sub>2</sub>O</sub></p>
-                        <p><b>Paso 3: Sustituir valores:</b><br>P<sub>H<sub>2</sub></sub> = 1.013 atm - 0.0313 atm = <b>0.9817 atm</b> (o ~746.2 mmHg)</p>
-                    </div>
-                `
-            },
-            {
-                id: 7,
-                level: 'avanzado',
-                levelLabel: '🔴 Avanzado',
-                levelClass: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-                pts: 20,
-                icon: 'fa-shuttle-space',
-                context: 'Exploración Espacial & NASA',
-                title: 'Atmósfera Controlada del Hábitat Espacial',
-                questionHtml: 'En el módulo espacial "Aura", el sistema de soporte vital mantiene una presión interna total regulada de <b>0.725 atm</b>. Los sensores indican presiones parciales fijadas en <b>P<sub>O<sub>2</sub></sub> = 0.210 atm</b> y <b>P<sub>N<sub>2</sub></sub> = 0.500 atm</b>. El resto corresponde al CO<sub>2</sub> metabólico no filtrado. ¿Cuál es la presión parcial de CO<sub>2</sub> (<b>P<sub>CO<sub>2</sub></sub></b>) en el hábitat?',
-                unit: 'atm',
-                answer: 0.015,
-                tolerance: 0.003,
-                hintHtml: 'La suma de todas las presiones parciales debe igualar a P<sub>total</sub>: <b>P<sub>CO<sub>2</sub></sub> = P<sub>total</sub> - (P<sub>O<sub>2</sub></sub> + P<sub>N<sub>2</sub></sub>)</b>.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Ecuación general de Dalton:</b><br>P<sub>total</sub> = P<sub>O<sub>2</sub></sub> + P<sub>N<sub>2</sub></sub> + P<sub>CO<sub>2</sub></sub></p>
-                        <p><b>Paso 2: Despejar P<sub>CO<sub>2</sub></sub>:</b><br>P<sub>CO<sub>2</sub></sub> = 0.725 atm - (0.210 atm + 0.500 atm)</p>
-                        <p><b>Paso 3: Resultado:</b><br>P<sub>CO<sub>2</sub></sub> = 0.725 - 0.710 = <b>0.015 atm</b> (o 11.4 mmHg)</p>
-                    </div>
-                `
-            },
-            {
-                id: 8,
-                level: 'avanzado',
-                levelLabel: '🔴 Avanzado',
-                levelClass: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-                pts: 20,
-                icon: 'fa-ship',
-                context: 'Atmósfera de Submarinos Nucleares',
-                title: 'Masa de Gases y Presión de CO₂ en Submarino',
-                questionHtml: 'Un compartimento estanco de submarino contiene una masa de <b>560 g de N<sub>2</sub></b> (M = 28 g/mol), <b>160 g de O<sub>2</sub></b> (M = 32 g/mol) y <b>44 g de CO<sub>2</sub></b> (M = 44 g/mol). Si el manómetro ambiental lee una presión total de <b>1.10 atm</b>, calcula la presión parcial ejercida únicamente por el CO<sub>2</sub> (<b>P<sub>CO<sub>2</sub></sub></b>).',
-                unit: 'atm',
-                answer: 0.0423,
-                tolerance: 0.003,
-                hintHtml: 'Convierte cada masa a moles (n = masa / MolarMass). Luego halla X<sub>CO<sub>2</sub></sub> = n<sub>CO<sub>2</sub></sub> / n<sub>total</sub> y multiplica por P<sub>total</sub> (1.10 atm).',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Moles de cada sustancia:</b><br>
-                        • n<sub>N<sub>2</sub></sub> = 560 / 28 = 20.0 mol<br>
-                        • n<sub>O<sub>2</sub></sub> = 160 / 32 = 5.0 mol<br>
-                        • n<sub>CO<sub>2</sub></sub> = 44 / 44 = 1.0 mol<br>
-                        <b>n<sub>total</sub> = 20.0 + 5.0 + 1.0 = 26.0 mol</b></p>
-                        <p><b>Paso 2: Fracción molar de CO<sub>2</sub>:</b><br>X<sub>CO<sub>2</sub></sub> = 1.0 / 26.0 = 0.03846</p>
-                        <p><b>Paso 3: Presión parcial:</b><br>P<sub>CO<sub>2</sub></sub> = 0.03846 × 1.10 atm = <b>0.0423 atm</b></p>
-                    </div>
-                `
-            },
-            {
-                id: 9,
-                level: 'master',
-                levelLabel: '🟣 Desafío Máster',
-                levelClass: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-                pts: 25,
-                icon: 'fa-industry',
-                context: 'Ingeniería Química Petroquímica',
-                title: 'Síntesis de Amoníaco (Haber-Bosch) en Equilibrio',
-                questionHtml: 'En un reactor industrial para la síntesis de amoníaco (<b>N<sub>2</sub> + 3 H<sub>2</sub> → 2 NH<sub>3</sub></b>), se cargan <b>100 mol de N<sub>2</sub></b> y <b>300 mol de H<sub>2</sub></b>. La reacción alcanza una conversión parcial del <b>50% del reactivo limitante</b>. Si en el equilibrio la presión total medida en el vaso reactor es de <b>200 atm</b>, calcula la presión parcial del amoníaco producido (<b>P<sub>NH<sub>3</sub></sub></b>).',
-                unit: 'atm',
-                answer: 66.67,
-                tolerance: 0.8,
-                hintHtml: 'Plantea la tabla de moles iniciales, reaccionantes (50% de 100 mol N<sub>2</sub> → reaccionan 50 mol N<sub>2</sub> y 150 mol H<sub>2</sub>) y finales. Calcula n<sub>total</sub> en equilibrio y luego X<sub>NH<sub>3</sub></sub> × 200 atm.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Estequiometría y Moles en Equilibrio:</b><br>
-                        • N<sub>2</sub> inicial = 100 mol. Reaccionan 50 mol → Quedan <b>50 mol N<sub>2</sub></b>.<br>
-                        • H<sub>2</sub> inicial = 300 mol. Reaccionan 150 mol → Quedan <b>150 mol H<sub>2</sub></b>.<br>
-                        • NH<sub>3</sub> formado = 2 × 50 mol = <b>100 mol NH<sub>3</sub></b>.<br>
-                        <b>n<sub>total</sub> = 50 + 150 + 100 = 300 mol totales en equilibrio.</b></p>
-                        <p><b>Paso 2: Fracción molar de NH<sub>3</sub>:</b><br>X<sub>NH<sub>3</sub></sub> = 100 / 300 = 1/3 ≈ 0.3333</p>
-                        <p><b>Paso 3: Presión Parcial:</b><br>P<sub>NH<sub>3</sub></sub> = (1/3) × 200 atm = <b>66.67 atm</b></p>
-                    </div>
-                `
-            },
-            {
-                id: 10,
-                level: 'master',
-                levelLabel: '🟣 Desafío Máster',
-                levelClass: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-                pts: 25,
-                icon: 'fa-cubes-stacked',
-                context: 'Termodinámica de Interconexión',
-                title: 'Expansión e Interconexión de Tanques Rígidos',
-                questionHtml: 'Un tanque de almacenamiento <b>A (V<sub>A</sub> = 10.0 L)</b> contiene Helio (He) a una presión de <b>3.00 atm</b>. Un segundo tanque <b>B (V<sub>B</sub> = 15.0 L)</b> contiene Neón (Ne) a <b>2.00 atm</b>. Ambos tanques se encuentran a la misma temperatura constante. Se abre la válvula de conexión uniendo ambos recipientes sin variación de temperatura. ¿Cuál es la <b>presión parcial final del Helio (P<sub>He</sub>)</b> en la mezcla expandida de 25.0 L?',
-                unit: 'atm',
-                answer: 1.20,
-                tolerance: 0.02,
-                hintHtml: 'Aplica la Ley de Boyle (P<sub>1</sub>V<sub>1</sub> = P<sub>2</sub>V<sub>2</sub>) para el Helio al expandirse del volumen inicial V<sub>1</sub> = 10.0 L al volumen total combinado V<sub>2</sub> = 10.0 L + 15.0 L = 25.0 L.',
-                solutionHtml: `
-                    <div class="space-y-1.5 font-sans">
-                        <p><b>Paso 1: Determinar el volumen total del sistema combinado:</b><br>V<sub>total</sub> = V<sub>A</sub> + V<sub>B</sub> = 10.0 L + 15.0 L = 25.0 L</p>
-                        <p><b>Paso 2: Ley de Boyle para la expansión isotérmica del Helio:</b><br>P<sub>He, inicial</sub> × V<sub>A</sub> = P<sub>He, final</sub> × V<sub>total</sub></p>
-                        <p><b>Paso 3: Despejar P<sub>He, final</sub>:</b><br>P<sub>He, final</sub> = (3.00 atm × 10.0 L) / 25.0 L = 30.0 / 25.0 = <b>1.20 atm</b></p>
-                        <p class="text-[11px] text-slate-400 italic">Curiosidad: De igual modo P<sub>Ne, final</sub> = (2.00 × 15.0) / 25.0 = 1.20 atm. Por Dalton, P<sub>total</sub> final = 1.20 + 1.20 = 2.40 atm.</p>
-                    </div>
-                `
-            }
-        ];
-
-        function toggleHint(qId) {
-            const hintEl = document.getElementById(`q-hint-box-${qId}`);
-            if (hintEl) hintEl.classList.toggle('hidden');
-        }
-
-        function toggleSolution(qId) {
-            const solEl = document.getElementById(`q-sol-box-${qId}`);
-            if (solEl) solEl.classList.toggle('hidden');
-        }
-
-        function checkNewQuizQuestion(qId) {
-            const q = quizData.find(item => item.id === qId);
-            if (!q) return;
-
-            const inputEl = document.getElementById(`q-input-${qId}`);
-            const feedbackEl = document.getElementById(`q-feedback-${qId}`);
-            const statusEl = document.getElementById(`q-status-${qId}`);
-            
-            if (!inputEl) return;
-            const rawVal = inputEl.value.trim().replace(',', '.');
-            const val = parseFloat(rawVal);
-
-            if (isNaN(val)) {
-                feedbackEl.className = 'text-xs p-3.5 rounded-xl border mt-3 bg-amber-500/10 border-amber-500/30 text-amber-300';
-                feedbackEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Ingresa un número válido antes de comprobar (ej. 0.84 o 0,84).';
-                feedbackEl.classList.remove('hidden');
-                return;
-            }
-
-            const isCorrect = Math.abs(val - q.answer) <= q.tolerance;
-
-            if (isCorrect) {
-                feedbackEl.className = 'text-xs p-3.5 rounded-xl border mt-3 bg-emerald-500/10 border-emerald-500/30 text-emerald-300';
-                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check text-sm mr-1.5 text-emerald-400"></i><b>¡Respuesta Correcta (+${q.pts} pts)!</b> El resultado exacto es ${q.answer} ${q.unit}.`;
-                statusEl.innerText = '✅ Resuelto';
-                statusEl.className = 'text-xs font-mono text-emerald-400 font-bold';
-                quizResults[qId] = q.pts;
-            } else {
-                feedbackEl.className = 'text-xs p-3.5 rounded-xl border mt-3 bg-rose-500/10 border-rose-500/30 text-rose-300';
-                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-sm mr-1.5 text-rose-400"></i><b>Valor incorrecto.</b> Revisa tus cálculos. Puedes consultar la "💡 Pista" o ver la "📐 Solución" paso a paso.`;
-                quizResults[qId] = 0;
-            }
-            feedbackEl.classList.remove('hidden');
-            updateOverallScorecard();
-        }
-
-        function updateOverallScorecard() {
-            let earned = 0;
-            let totalPossible = 0;
-            let solvedCount = 0;
-
-            quizData.forEach(q => {
-                totalPossible += q.pts;
-                if (quizResults[q.id] && quizResults[q.id] > 0) {
-                    earned += quizResults[q.id];
-                    solvedCount++;
-                }
-            });
-
-            const scoreEl = document.getElementById('quiz-score-pts');
-            const pctEl = document.getElementById('quiz-progress-bar');
-            const rankEl = document.getElementById('quiz-rank-badge');
-            const solvedCountEl = document.getElementById('quiz-solved-count');
-
-            if (scoreEl) scoreEl.innerText = `${earned} / ${totalPossible} pts`;
-            if (solvedCountEl) solvedCountEl.innerText = `${solvedCount} / ${quizData.length}`;
-
-            const pct = totalPossible > 0 ? (earned / totalPossible) * 100 : 0;
-            if (pctEl) pctEl.style.width = `${pct}%`;
-
-            let rank = '🔰 Novato';
-            if (earned >= 160) rank = '🚀 Experto en Termodinámica';
-            else if (earned >= 110) rank = '🎓 Especialista en Dalton';
-            else if (earned >= 60) rank = '📐 Técnico de Laboratorio';
-            else if (earned > 0) rank = '🧪 Aprendiz de Gases';
-
-            if (rankEl) rankEl.innerText = rank;
-        }
-
-        function filterQuiz(filter) {
-            const filterBtns = ['all', 'facil', 'intermedio', 'avanzado', 'master'];
-            filterBtns.forEach(f => {
-                const btn = document.getElementById(`quiz-filter-${f}`);
-                if (!btn) return;
-                if (f === filter) {
-                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-indigo-600 text-white shadow-md border border-indigo-400/30';
-                } else {
-                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all bg-slate-800 text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-700/50';
-                }
-            });
-
-            quizData.forEach(q => {
-                const card = document.getElementById(`q-card-${q.id}`);
-                if (!card) return;
-                if (filter === 'all' || q.level === filter) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-        }
-
-        function renderQuizCards() {
-            const container = document.getElementById('quiz-container');
-            if (!container) return;
-
-            container.innerHTML = quizData.map(q => `
-                <div id="q-card-${q.id}" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 hover:border-slate-700 transition-all shadow-md">
-                    <!-- Header de la tarjeta -->
-                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg border ${q.levelClass}">
-                                ${q.levelLabel} (+${q.pts} pts)
-                            </span>
-                            <span class="text-xs font-medium px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
-                                <i class="fa-solid ${q.icon} text-indigo-400"></i>
-                                ${q.context}
-                            </span>
-                        </div>
-                        <span id="q-status-${q.id}" class="text-xs font-mono text-slate-400 font-semibold">
-                            ${quizResults[q.id] > 0 ? '✅ Resuelto' : '⏳ Pendiente'}
-                        </span>
-                    </div>
-
-                    <!-- Título y Enunciado -->
-                    <div>
-                        <h3 class="text-base font-bold text-slate-100 mb-1.5 flex items-center gap-2">
-                            ${q.title}
-                        </h3>
-                        <p class="text-sm text-slate-300 font-normal leading-relaxed">
-                            ${q.questionHtml}
-                        </p>
-                    </div>
-
-                    <!-- Entrada de Respuesta e Interacción -->
-                    <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex items-center gap-2">
-                            <label for="q-input-${q.id}" class="text-xs font-semibold text-slate-400">Respuesta:</label>
-                            <input type="text" id="q-input-${q.id}" placeholder="0.00" onkeydown="if(event.key === 'Enter') checkNewQuizQuestion(${q.id})" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-sm text-slate-100 font-mono w-32 focus:outline-none focus:border-indigo-500 transition-colors">
-                            <span class="text-xs font-bold text-slate-400 font-mono">${q.unit}</span>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <button onclick="toggleHint(${q.id})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-medium border border-slate-700 transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-lightbulb text-amber-400"></i>
-                                <span>Pista</span>
-                            </button>
-                            <button onclick="toggleSolution(${q.id})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 rounded-xl text-xs font-medium border border-slate-700 transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-graduation-cap text-indigo-400"></i>
-                                <span>Solución</span>
-                            </button>
-                            <button onclick="checkNewQuizQuestion(${q.id})" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md transition-all">
-                                Comprobar
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Pista Box (Oculto por defecto) -->
-                    <div id="q-hint-box-${q.id}" class="hidden text-xs p-3 rounded-xl border bg-amber-500/10 border-amber-500/30 text-amber-200 space-y-1">
-                        <div class="font-bold flex items-center gap-1.5">
-                            <i class="fa-solid fa-lightbulb text-amber-400"></i> Pista Metodológica:
-                        </div>
-                        <div class="leading-relaxed">${q.hintHtml}</div>
-                    </div>
-
-                    <!-- Solución Paso a Paso Box (Oculto por defecto) -->
-                    <div id="q-sol-box-${q.id}" class="hidden text-xs p-3.5 rounded-xl border bg-slate-950 border-indigo-500/30 text-slate-200 space-y-2">
-                        <div class="font-bold text-indigo-400 flex items-center gap-1.5 border-b border-slate-800 pb-1.5">
-                            <i class="fa-solid fa-square-root-variable"></i> Deducción Paso a Paso:
-                        </div>
-                        <div>${q.solutionHtml}</div>
-                    </div>
-
-                    <!-- Feedback de Respuesta -->
-                    <div id="q-feedback-${q.id}" class="hidden"></div>
-                </div>
-            `).join('');
-        }
-
-        window.onload = function() {
-            canvas = document.getElementById('simCanvas');
-            ctx = canvas.getContext('2d');
-
-            bindControls();
-            syncParticleCounts();
-            updateCalculations();
-
-            renderQuizCards();
-            updateOverallScorecard();
-
-            renderSim();
-        };
-    </script>
+      });
+      document.getElementById('interactive-score').innerText = `${resolved} / ${currentExercises.length}`;
+    }
+
+    function openStepModal(exId) {
+      const ex = currentExercises.find(e => e.id === exId);
+      if (!ex) return;
+
+      document.getElementById('step-modal-title').innerText = `Solución Paso a Paso - Ejercicio ${ex.id})`;
+      
+      const content = document.getElementById('step-modal-content');
+      content.innerHTML = '';
+
+      const origBox = document.createElement('div');
+      origBox.className = 'p-4 bg-white rounded-xl border border-slate-200 text-center shadow-sm';
+      
+      const origHeader = document.createElement('div');
+      origHeader.className = 'text-xs uppercase tracking-wider font-bold text-slate-400 mb-2';
+      origHeader.innerText = 'Enunciado del Ejercicio';
+      
+      const origMath = document.createElement('div');
+      origMath.className = 'text-xl font-bold text-slate-900 py-1';
+      safeRenderTex(origMath, ex.tex, true);
+
+      origBox.appendChild(origHeader);
+      origBox.appendChild(origMath);
+      content.appendChild(origBox);
+
+      const stepsContainer = document.createElement('div');
+      stepsContainer.className = 'space-y-3';
+
+      ex.steps.forEach((step, idx) => {
+        const stepCard = document.createElement('div');
+        stepCard.className = 'p-4 bg-white rounded-xl border-l-4 border-indigo-500 border-y border-r border-slate-200 shadow-sm space-y-2';
+
+        const stepTitle = document.createElement('h4');
+        stepTitle.className = 'font-bold text-sm text-indigo-950 flex items-center gap-2';
+        stepTitle.innerHTML = `<span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs flex items-center justify-center font-bold">${idx + 1}</span> ${step.title}`;
+
+        const stepDesc = document.createElement('p');
+        stepDesc.className = 'text-xs text-slate-600 leading-relaxed pl-8';
+        stepDesc.innerText = step.desc;
+
+        const stepMath = document.createElement('div');
+        stepMath.className = 'pl-8 text-sm pt-1';
+        safeRenderTex(stepMath, step.math, false);
+
+        stepCard.appendChild(stepTitle);
+        stepCard.appendChild(stepDesc);
+        stepCard.appendChild(stepMath);
+
+        stepsContainer.appendChild(stepCard);
+      });
+
+      content.appendChild(stepsContainer);
+
+      const finalBox = document.createElement('div');
+      finalBox.className = 'p-4 bg-emerald-50 border border-emerald-200 text-emerald-950 rounded-xl text-center space-y-1 shadow-sm';
+      
+      const finalTitle = document.createElement('div');
+      finalTitle.className = 'text-xs font-bold uppercase tracking-wider text-emerald-700';
+      finalTitle.innerText = 'Solución Final Irreducible';
+
+      const finalMath = document.createElement('div');
+      finalMath.className = 'text-xl font-black text-emerald-900 py-1';
+      safeRenderTex(finalMath, `\\text{Soluc: } ${ex.solucStr}`, false);
+
+      finalBox.appendChild(finalTitle);
+      finalBox.appendChild(finalMath);
+      content.appendChild(finalBox);
+
+      const modal = document.getElementById('step-modal');
+      modal.classList.remove('hidden');
+    }
+
+    function closeStepModal() {
+      document.getElementById('step-modal').classList.add('hidden');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeStepModal();
+    });
+
+    document.getElementById('step-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'step-modal') closeStepModal();
+    });
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const bgColor = type === 'success' ? 'bg-emerald-600' :
+                      type === 'error' ? 'bg-rose-600' :
+                      type === 'warning' ? 'bg-amber-600' : 'bg-slate-800';
+
+      toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 pointer-events-auto transition-all transform translate-y-2 opacity-0`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
 </body>
 </html>
